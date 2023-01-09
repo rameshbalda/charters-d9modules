@@ -1,0 +1,61 @@
+{# get our custom form options #}
+{% set uoptions = form['#get_options'] %}
+
+<div class="edit-application-wrapper row">
+    <div class="col-sm-12">
+      <div class="title-row">
+        <div><h3>Apply for a Job</h3></div>
+        <div class="job-info">
+          <h4>{{ getJobTitle(uoptions.id) }}</h4>
+        </div>
+      </div>
+  </div>
+</div>
+  {#
+    for required but not shown
+  #}
+  <div class="hidden">
+    {{ form.form_build_id}}
+    {{ form.field_job_lising }}
+    {{ form.form_id }}
+    {{ form.form_token }}
+  </div>
+
+<div class="row row-flex" id="main-form-content">
+  <div class="col-sm-4 user-profile col">
+    {% if uoptions.user.profile_id is defined %}
+    <div class="prof-info profile-name">
+      <div class="field--label">Name</div>
+      {% if uoptions.user.profile_name %}
+        {{ uoptions.user.profile_name }}
+      {% else %}
+        {{ getProfileName(uoptions.user.profile_id) }}
+      {% endif %}
+    </div>
+    <div class="prof-info profile-status">
+      <div class="field--label">Profile Status</div>
+      <div class="prof-ready">
+        <div class="field--label">Ready</div>
+      </div>
+      {% if userHasProfilePermission(uoptions.user.user_id, uoptions.user.profile_id) %}
+      <div class="prof-edit">
+        <a href="/node/{{ uoptions.user.profile_id }}/edit">Edit My Profile</a>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {{ form.field_resume }}
+  </div>
+
+  <div class="col-sm-8 col">
+    <div class="cover-letter">
+      {{ form.body }}
+    </div>
+    <div class="actions">
+      {{ form.actions.submit }}
+    </div>
+  </div>
+
+
+</div>

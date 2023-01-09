@@ -1,0 +1,5 @@
+name: NAPCS Share
+type: module
+description: NAPCS social network share integrations
+core_version_requirement: ^8 || ^9
+package: NAPCS

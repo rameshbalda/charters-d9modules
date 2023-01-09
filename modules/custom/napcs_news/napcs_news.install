@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * napcs_news.install
+ */
+
+use Drupal\comment\Plugin\Field\FieldType\CommentItemInterface;
+
+/**
+ * Close all comments.
+ */
+function napcs_news_update_8001(&$sandbox) {
+  foreach (\Drupal::entityTypeManager()->getStorage('node')->loadByProperties([
+    'field_comments.status' => CommentItemInterface::OPEN,
+  ]) as $node) {
+    $node->field_comments->status = CommentItemInterface::CLOSED;
+    $node->save();
+  }
+}

@@ -1,0 +1,5 @@
+name: NAPCS Hubspot
+type: module
+description: NAPCS Hubspot integration
+core_version_requirement: ^8 || ^9
+package: NAPCS

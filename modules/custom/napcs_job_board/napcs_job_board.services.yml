@@ -1,0 +1,27 @@
+services:
+  napcs_job_board_subscriber:
+    class: \Drupal\napcs_job_board\EventSubscriber\JobBoardSubscriber
+    tags:
+      - { name: 'event_subscriber' }
+  napcs_job_board.user_register_access:
+    class: \Drupal\napcs_job_board\Access\UserRegisterAccess
+    arguments: ['@current_route_match']
+    tags:
+      - { name: access_check, applies_to: _napcs_job_board_access_user_register }
+  napcs_job_board.exception403.subscriber:
+    class: \Drupal\napcs_job_board\EventSubscriber\RedirectOn403Subscriber
+    tags:
+      - { name: event_subscriber }
+    arguments: ['@current_user', '@napcs_job_board.route_helper']
+  napcs_job_board.user_export:
+    class: Drupal\napcs_job_board\NJBUserExport
+    arguments: ['@entity_type.manager', '@plugin.manager.migration']
+  napcs_job_board.route_helper:
+    class: Drupal\napcs_job_board\NJBRouteHelper
+    arguments: ['@current_route_match', '@current_user']
+  napcs_job_board.user_helper:
+    class: Drupal\napcs_job_board\NJBUserHelper
+    arguments: ['@current_user', '@entity_type.manager']
+  napcs_job_board.user_register_helper:
+    class: Drupal\napcs_job_board\NJBUserRegisterHelper
+    arguments: ['@napcs_job_board.route_helper', '@napcs_job_board.user_helper']

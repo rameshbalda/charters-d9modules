@@ -1,0 +1,8 @@
+{%
+  set classes = [
+    'panel-group'
+  ]
+%}
+<div {{ attributes.addClass(classes) }} role="tablist" aria-multiselectable="true">
+  {{ panels }}
+</div>

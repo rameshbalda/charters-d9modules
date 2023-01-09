@@ -1,0 +1,28 @@
+.metabar {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+  font-family: $futura;
+  font-weight: 500;
+  letter-spacing: 1px;
+  .metabar__item {
+    padding: 0 15px;
+    border-right: 2px $light-white solid;
+    @media #{$bp-gt-mobile} {
+      padding: 0 30px;
+    }
+    &:first-child {
+      padding-left: 0;
+    }
+    &:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+    a {
+      color: $dark-blue;
+      &:hover {
+        color: $red;
+      }
+    }
+  }
+}

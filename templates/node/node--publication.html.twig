@@ -1,0 +1,36 @@
+{%
+  set classes = [
+    node.bundle|clean_class,
+    node.isPromoted() ? 'is-promoted',
+    node.isSticky() ? 'is-sticky',
+    not node.isPublished() ? 'is-unpublished',
+    view_mode ? view_mode|clean_class,
+    'clearfix',
+    'publication',
+  ]
+%}
+<article{{ attributes.addClass(classes) }}>
+    <div class="row">
+      <div class="col-sm-9">
+  <div class="content">
+        {{ content.body }}
+  </div>
+        <div class="row">
+          <div class="col-sm-4">
+            {{ content.field_author }}
+          </div>
+          <div class="col-sm-4">
+            {{ content.field_pub_date }}
+            {{ content.field_publication_types }}
+          </div>
+          <div class="col-sm-4">
+            {{ content.field_tags }}
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-3 pub-side">
+        {{ content.field_document }}
+        {{ content.field_image_media }}
+      </div>
+    </div>
+</article>

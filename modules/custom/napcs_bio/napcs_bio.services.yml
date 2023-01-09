@@ -1,0 +1,4 @@
+services:
+  napcs_bio.queue_service:
+    class: Drupal\napcs_bio\BioQueueService
+    arguments: ['@entity_type.manager']

@@ -1,0 +1,10 @@
+facebook:
+  js:
+    js/napcs_share.facebook.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+
+twitter:
+  js:
+    '//platform.twitter.com/widgets.js': { type: external, minified: true }

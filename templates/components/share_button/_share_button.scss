@@ -1,0 +1,8 @@
+.share-button {
+  font-size: 24px;
+  margin-left: 10px;
+  color: $dark-blue;
+  &:hover {
+    color: $red;
+  }
+}

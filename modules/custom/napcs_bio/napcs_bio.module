@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Contains napcs_bio.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function napcs_bio_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the napcs_bio module.
+    case 'help.page.napcs_bio':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Customization for NAPCS Staff and Board bios') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_pathauto_alias_alter().
+ */
+function napcs_bio_pathauto_alias_alter(&$alias, $context) {
+  if (strpos($alias, '[bio-queue]') !== FALSE) {
+    $node = $context['data']['node'];
+    $queue = \Drupal::service('napcs_bio.queue_service')->getQueue($node);
+    $alias = str_replace('//', '/', str_replace('[bio-queue]', $queue, $alias));
+  }
+}

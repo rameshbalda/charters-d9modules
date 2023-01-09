@@ -1,0 +1,75 @@
+id: napcs_blog
+label: NAPCS Blog
+dependencies:
+  enforced:
+    module:
+      - napcs_migrate
+
+source:
+  plugin: csv
+  header_row_count: 1
+  path: 'private://hubspot-blog.csv'
+  column_names:
+    0:
+      created: Publish Date
+    1:
+      title: Name
+    2:
+      author: Author
+    6:
+      url: Url
+    7:
+      status: State
+  keys:
+    - created
+    - title
+
+process:
+  title: title
+  status:
+    -
+      plugin: static_map
+      map:
+        'PUBLISHED': 1
+        'DRAFT': NULL
+      source: status
+    -
+      plugin: skip_on_empty
+      method: row
+  'body/value':
+    plugin: hubspot_content
+    source: url
+  'body/format':
+    plugin: default_value
+    default_value: full_html
+  'field_image_media/target_id':
+    plugin: hubspot_image
+    source: url
+  field_author_bio:
+    plugin: author_generate
+    source: author
+  field_pub_date:
+    -
+      plugin: explode
+      delimiter: ' '
+      source: created
+    -
+      plugin: extract
+      index:
+        - 0
+  field_news_item_types:
+    -
+      plugin: default_value
+      default_value: 'Blog'
+    -
+      plugin: entity_generate
+  created:
+    plugin: callback
+    callable: strtotime
+    source: created
+  type:
+    default_value: news_item
+    plugin: default_value
+
+destination:
+  plugin: entity:node

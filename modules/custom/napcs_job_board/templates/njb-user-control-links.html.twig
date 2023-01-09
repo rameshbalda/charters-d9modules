@@ -1,0 +1,10 @@
+<nav class="njb-user-control-links navbar navbar-right">
+  <div class="col-sm-12">
+    {% if title %}
+      {{ title }}
+    {% endif %}
+    {% for link in NJBUserLinks %}
+        {{ link }}
+    {% endfor %}
+  </div>
+</nav>

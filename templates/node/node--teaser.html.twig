@@ -1,0 +1,18 @@
+{%
+  set classes = [
+    node.bundle|clean_class,
+    node.isPromoted() ? 'is-promoted',
+    node.isSticky() ? 'is-sticky',
+    not node.isPublished() ? 'is-unpublished',
+    view_mode ? view_mode|clean_class,
+    'clearfix',
+  ]
+%}
+{% include '@napcs2017/components/card/card.html.twig' with {
+  attributes: attributes.addClass(classes),
+  meta_items: meta_items,
+  image: content.field_image_media,
+  url: url,
+  title: label,
+  content: content|without('field_image_media'),
+} %}

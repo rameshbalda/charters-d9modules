@@ -1,0 +1,68 @@
+{% if page.alert|render %}
+  {{ page.alert }}
+{% endif %}
+
+<header>
+  <nav class="navbar navbar-default">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-3 menu-logo">
+          <a class="navbar-brand" href="/"><img class="img-responsive" src="/themes/custom/napcs2017/logo.png" /></a>
+          <div class="visible-sm-block">
+            <form action="/search/node" method="get" id="search-block-form" accept-charset="UTF-8" class="search-form search-block-form" data-drupal-form-fields="edit-keys">
+              <div class="input-group">
+                <input type="search" id="edit-keys" name="keys" class="form-control form-search" placeholder="SEARCH">
+                <span class="input-group-btn">
+                  <button class="search-form__submit button js-form-submit form-submit btn" type="submit" data-drupal-selector="edit-submit" type="submit" id="edit-submit"><i class="fa fa-search"></i></button>
+                </span>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-sm-9 main-menu-right">
+          <div class="row social-search">
+            <div class="col-sm-8">
+              {{ page.header_social }}
+            </div>
+            <div class="col-sm-4">
+              <div class="navbar-header">
+                <button  type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                  <div id="navbar-burger" class="nav-burger">
+                    <span class="sr-only">Toggle navigation</span>
+                    <i class="fa fa-bars"></i>
+                  </div>
+                  <div id="navbar-close" class="nav-x"><span class="navbar-toggler-icon"><i class="fa fa-times"></i></span></div>
+                </button>
+              </div>
+              <form class="visible-md-block visible-lg-block" action="/search/node" method="get" id="search-block-form" accept-charset="UTF-8" class="search-form search-block-form" data-drupal-form-fields="edit-keys">
+                <div class="input-group">
+                  <input type="search" id="edit-keys" name="keys" class="form-control form-search" placeholder="SEARCH">
+                  <span class="input-group-btn">
+                    <button class="search-form__submit button js-form-submit form-submit btn" type="submit" data-drupal-selector="edit-submit" type="submit" id="edit-submit"><i class="fa fa-search"></i></button>
+                  </span>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 menu-nav">
+              <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                {{ page.navigation }}
+                <div class="visible-xs mobile-search">
+                  <form action="/search/node" method="get" id="search-block-form" accept-charset="UTF-8" class="search-form search-block-form" data-drupal-form-fields="edit-keys">
+                    <div class="input-group">
+                      <input type="search" id="edit-keys" name="keys" class="form-control form-search" placeholder="SEARCH">
+                      <span class="input-group-btn">
+                        <button class="search-form__submit button js-form-submit form-submit btn" type="submit" data-drupal-selector="edit-submit" type="submit" id="edit-submit"><i class="fa fa-search"></i></button>
+                      </span>
+                    </div>
+                  </form>
+                </div>
+              </div><!-- /.navbar-collapse -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </nav>
+</header>

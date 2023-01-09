@@ -1,0 +1,62 @@
+{#
+/**
+ * @file
+ * Default theme implementation of a views exposed form.
+ *
+ * Available variables:
+ * - form: A render element representing the form.
+ *
+ * @ingroup templates
+ *
+ * @see template_preprocess_views_exposed_form()
+ */
+#}
+{% if q is not empty %}
+  {#
+    This ensures that, if clean URLs are off, the 'q' is added first,
+    as a hidden form element, so that it shows up first in the POST URL.
+  #}
+  {{ q }}
+{% endif %}
+<div class="form--inline form-inline clearfix">
+  <div class="row-top">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-4 form-cell">
+          <i class="fa fa-search"></i>
+          {{ form.keys }}
+        </div>
+        <div class="col-sm-4 form-cell">
+          {{ form.type }}
+        </div>
+        <div class="col-sm-4 form-cell">
+          {{ form.tags }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row-bottom">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-8 form-cell dates">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="date-wrapper date-wrapper-min">
+                {{ form.date.min }}
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="date-wrapper date-wrapper-max">
+                {{ form.date.max }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          {{ form.actions.submit }}
+          {{ form.actions.reset }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

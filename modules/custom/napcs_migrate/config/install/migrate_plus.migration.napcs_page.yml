@@ -1,0 +1,14 @@
+id: napcs_page
+label: Pages
+migration_group: napcs_node
+migration_tags:
+  - node
+  - page
+
+source:
+  urls: private://page.xml
+  item_selector: /rss/channel/item[wp:post_type="page"]
+
+process:
+  type:
+    default_value: page

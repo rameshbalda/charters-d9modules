@@ -1,0 +1,475 @@
+<?php
+
+/**
+ * @file
+ * Contains napcs_job_board.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\napcs_job_board\NJBHookHelpers as helper;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\block\Entity\Block;
+use Drupal\user\Entity\User;
+
+/**
+ * Implements hook_cron().
+ */
+function napcs_job_board_cron() {
+  $nids = \Drupal::entityQuery('node')
+    ->condition('type', 'job_listing')
+    ->condition('status', NodeInterface::PUBLISHED)
+    ->condition('field_posted_date', strftime('%Y-%m-%d', strtotime('now - 90 days')), '<')
+    ->execute();
+  if (!$nids) {
+    return;
+  }
+  $queue = \Drupal::queue('job_board_expire');
+  foreach ($nids as $nid) {
+    $queue->createItem($nid);
+  }
+}
+
+/**
+ * Implements hook_block_access().
+ */
+function napcs_job_board_block_access(Block $block, $operation, AccountInterface $account) {
+  // Hide tabs block from job_seekers.
+  if ($block->getPluginId() == 'local_tasks_block') {
+    $user = User::load($account->id());
+    $is_job_seeker = $user->hasRole('job_seeker');
+    return AccessResult::forbiddenIf($is_job_seeker);
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function napcs_job_board_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  switch ($form_id) {
+    case 'node_job_listing_form':
+    case 'node_organization_form':
+    case 'node_profile_edit_form':
+      // Suppress the revision log.
+      $revision_keys = ['revision_log', 'revision_information', 'revision'];
+      foreach ($revision_keys as $key) {
+        if (isset($form[$key])) {
+          $form[$key]['#access'] = FALSE;
+        }
+      }
+      break;
+
+    case 'node_application_form':
+      $app_id = \Drupal::request()->get('app_id');
+      if (!empty($app_id)) {
+        $form['#theme'] = 'application_form';
+        // Fill out some values and hide them.
+        $listing = helper::nload($app_id);
+        $form['field_job_listing']['widget'][0]['target_id']['#default_value'] = $listing;
+        $form['field_job_listing']['#access'] = FALSE;
+
+        $user_helper = \Drupal::service('napcs_job_board.user_helper');
+        // Need to add the user's resume.
+        $user = $user_helper->getCurrentUser();
+        if ($profile = $user_helper->getUserProfile($user)) {
+          $resume = $user_helper->getUserProfileResume($profile);
+
+          $trigger = $form_state->getTriggeringElement();
+          $is_remove = !empty($trigger) && $trigger['#value'] == 'Remove';
+          if (!empty($resume) && !$is_remove) {
+            $form['field_resume']['widget'][0]['#default_value'] = [
+              'fids' => [$resume->id()],
+              'display' => TRUE,
+              'description' => "",
+              'upload' => "",
+            ];
+
+            $form['field_resume']['#cache']['contexts'][] = 'user';
+          }
+        }
+
+        // Suppress the revision log.
+        $form['revision_log']['#access'] = FALSE;
+
+        // Add some custom options for filling out info related to the user.
+        $form['#get_options'] = [];
+        $form['#get_options']['id'] = $app_id;
+        $profile_id = $user->field_profile->target_id;
+        $form['#get_options']['id'] = $app_id;
+        $form['#get_options']['user'] = [
+          'user_id' => $user->id(),
+          'profile_id' => $profile_id,
+        ];
+
+        if ($profile = $user_helper->getUserProfile($user)) {
+          $form['#get_options']['user']['profile_name'] = $profile->getTitle();
+        }
+
+      }
+      else {
+        $form['#theme'] = 'application_form_need_id';
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_form_BASE_ID_alter().
+ */
+function napcs_job_board_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  \Drupal::service('napcs_job_board.user_helper')->userFormAlter($form, $form_state);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function napcs_job_board_form_user_register_form_alter(&$form, FormStateInterface $form_state) {
+  // If on our custom registration form, add redirect to job listings page.
+  \Drupal::service('napcs_job_board.user_register_helper')->formAlter($form, $form_state);
+}
+
+/**
+ * Implements hook_help().
+ */
+function napcs_job_board_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the napcs_job_board module.
+    case 'help.page.napcs_job_board':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('NAPCS Job Board functionality') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_node_access().
+ */
+function napcs_job_board_node_access(NodeInterface $node, $op, AccountInterface $account) {
+  switch ($node->getType()) {
+    case 'application':
+      if ($op == 'view') {
+        // Job seekers can only see their own applications.
+        if ($account->id() == $node->getOwnerId() && $account->hasPermission('view own job applications')) {
+          return AccessResult::allowed();
+        }
+        // Employers can only see applications created for their listings.
+        $listing = $node->get('field_job_listing')->referencedEntities()[0];
+        if ($account->id() == $listing->getOwnerId() && $account->hasPermission('view job applications for own listings')) {
+          return AccessResult::allowed();
+        }
+        // Admins can see all applications.
+        if ($account->hasPermission('view job applications')) {
+          return AccessResult::allowed();
+        }
+        // Everyone else is forbidden.
+        return AccessResult::forbidden();
+      }
+      break;
+
+  }
+  return AccessResult::neutral();
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function napcs_job_board_node_insert(NodeInterface $node) {
+  switch ($node->getType()) {
+    case 'profile':
+      // When a job seeker adds a profile node, if they don't already have a
+      // value for their profile field, add the new node as their profile.
+      $user = $node->getOwner();
+      if ($user->hasRole('job_seeker') && !$user->get('field_profile')->count()) {
+        $user->set('field_profile', $node);
+        $user->save();
+      }
+      break;
+
+    case 'application':
+      // When a new application is created send a notification to the employer
+      // and the job seeker.
+      $application = $node;
+      $job_seeker = $application->getOwner();
+      $listing = $application->get('field_job_listing')->referencedEntities()[0];
+      $employer = $listing->getOwner();
+      $params['replacements'] = [
+        '@listing' => $listing->label(),
+        '@org' => $listing->get('field_organization')->referencedEntities()[0]->label(),
+        '@employer' => $employer->getAccountName(),
+        '@job_seeker' => $job_seeker->get('field_profile')->referencedEntities()[0]->label(),
+        ':url' => $application->toUrl('canonical', ['absolute' => TRUE])->toString(),
+      ];
+      $mail_manager = \Drupal::service('plugin.manager.mail');
+      foreach (\Drupal::service('napcs_job_board.user_helper')->getJobBoardRoles() as $role) {
+        $mail_manager->mail(
+          'napcs_job_board',
+          "application_$role",
+          $$role->getEmail(),
+          $$role->getPreferredAdminLangcode(),
+          $params
+        );
+      }
+      break;
+
+  }
+}
+
+/**
+ * Implements hook_preprocess_field().
+ */
+function napcs_job_board_preprocess_field(&$variables) {
+  $isFull = $variables['element']['#view_mode'] == 'full';
+  $isField = in_array($variables["field_name"], ['field_twitter_id', 'field_linkedin_id']);
+  if ($isFull && $isField) {
+    $variables['label'] = trim(str_replace(' ID', '', $variables['label']));
+  }
+}
+
+/**
+ * Implements hook_preprocess_form().
+ */
+function napcs_job_board_preprocess_form(&$vars) {
+  if ($vars['element']['form_id']['#id'] == 'edit-node-application-form') {
+    // Let pass our app id to the form.
+    $vars['element']['get']['app_id'] = \Drupal::request()->get('app_id');
+
+    // we'll load up our user profile info.
+    $user = User::load($vars['user']->id());
+    $user_helper = \Drupal::service('napcs_job_board.user_helper');
+    $vars['user_profile']['id'] = $user->field_profile->target_id;
+    if ($profile = $user_helper->getUserProfile($user)) {
+      $vars['user_profile']['name'] = $profile->getTitle();
+    }
+  }
+}
+
+/**
+ * Implements hook_form_BASE_ID_().
+ */
+function napcs_job_board_preprocess_page(&$variables) {
+  // Set variable to switch content and sidebar if on employer user page.
+  $is_employer = \Drupal::service('napcs_job_board.user_helper')->isEmployer();
+  $is_user_page = \Drupal::service('napcs_job_board.route_helper')->isCurrentUser();
+  $variables['is_employer'] = $is_employer && $is_user_page;
+}
+
+/**
+ * Implements hook_preprocess_views_view_fields().
+ */
+function napcs_job_board_preprocess_views_view_field(&$variables) {
+  if (helper::isView($variables['view'])) {
+    // Trim all output.
+    $output = $variables['output'];
+    $sep = ', ';
+    // Lets pull the nid.
+    $nid = $variables['row']->nid;
+
+    switch ($variables['field']->realField) {
+      case 'field_legacy_location_value':
+        // If we have the locality and area filled out
+        // lets not load the legacy location value.
+        $hasState = helper::addressHas($nid, 'administrative_area');
+        $hasLocality = helper::addressHas($nid, 'locality');
+        if ($hasLocality || $hasState) {
+          $output = '';
+        }
+        break;
+
+      case 'field_address_locality':
+        $output = $variables['output'];
+
+        // If we have have the state defined, lets append it here.
+        if (helper::addressHas($nid, 'administrative_area')) {
+          $output .= $sep . helper::getAddressValue($nid, 'administrative_area');
+        }
+
+        // If we are flexible.
+        if (helper::isFlexible($nid) && !empty($output)) {
+          helper::appendFlexible($output, $sep);
+        }
+        break;
+
+      // Set back to the two letter state code.
+      case 'field_address_administrative_area':
+        // If locality exists, then it will append the administrative
+        // area for us so we can just skip it.
+        if (!helper::addressHas($nid, 'locality')) {
+          $output = $variables['output'];
+          // If the location is flexible.
+          if (helper::isFlexible($nid) && !empty($ouput)) {
+            helper::appendFlexible($output, $sep);
+          }
+        }
+        else {
+          $output = '';
+        }
+        break;
+
+      case 'field_flexible_location_value':
+        // The above will fill in the flex location
+        // but if the above never got filled out, then
+        // lets just input flexible output.
+        $hasAddressField = helper::hasAddressField($nid);
+        $hasLegacyField = helper::hasLegacyLocation($nid);
+        if (!$hasAddressField && !$hasLegacyField) {
+          if (helper::isFlexible($nid)) {
+            $output = '';
+            helper::appendFlexible($output, '');
+          }
+        }
+        else {
+          $output = '';
+        }
+        break;
+
+      case 'title':
+      case 'field_organization_target_id':
+        // Try and alter the link to include the current url variables
+        // so that we can pass them to the back button of the jobs listing page.
+        $row = $variables['row'];
+        $field = $variables['field'];
+
+        $req = helper::getAllRequestParameters();
+        // In some cases like on the organization page, we have another
+        // view block that has the tite in the table
+        // and our req param was already passed back from the previous view.
+        // and in this case, we'll just want to pass along the back param.
+        if (isset($req['back'])) {
+          $req = $req['back'];
+        }
+
+        if (!empty($req) && $field->options['alter']['make_link'] == TRUE) {
+          // Lets alter the path output.
+          $params = [];
+          foreach ($req as $key => $value) {
+            if (is_array($value)) {
+              foreach ($value as $index => $v) {
+                array_push($params, "back[" . urlencode($key) . "][$index]=" . urlencode($v));
+              }
+
+            }
+            else {
+              array_push($params, "back[" . urlencode($key) . "]=" . urlencode($value));
+            }
+          }
+
+          if (!empty($params)) {
+            $field->options['alter']['path'] .= '?' . implode('&', $params);
+            // Reloads the advanced renderer with our new alter path.
+            $output = $field->advancedRender($row);
+            $ouput['#cache']['contexts'][] = 'url.query_args';
+          }
+        }
+        break;
+
+      case 'field_job_type_target_id':
+        // Going to change Full-Time to FT and Part-Time to PT
+        // $output = $variables['output']->__toString();
+        $output = str_replace('Full-Time', 'FT', $output);
+        $output = str_replace('Full Time', 'FT', $output);
+        $output = str_replace('Full time', 'FT', $output);
+        $output = str_replace('full time', 'FT', $output);
+        $output = str_replace('Part-Time', 'PT', $output);
+        $output = str_replace('Part-time', 'PT', $output);
+        $output = str_replace('Part time', 'PT', $output);
+        $output = str_replace('part time', 'PT', $output);
+        break;
+    }
+
+    $variables['output'] = $output;
+  }
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function napcs_job_board_query_search_node_search_alter($query) {
+  // Exclude user profiles and job applications from search results.
+  $query->condition('n.type', ['profile', 'application'], 'NOT IN');
+}
+
+/**
+ * Implements hook_theme().
+ */
+function napcs_job_board_theme() {
+  return [
+    'application_form' => [
+      'render element' => 'form',
+    ],
+    'application_form_need_id' => [
+      'render element' => 'form',
+    ],
+    'njb_organization_block' => [
+      'render element' => 'block',
+      'variables' => [
+        'org' => [],
+      ],
+    ],
+    'njb_user_control_links' => [
+      'render element' => 'block',
+      'variables' => [
+        'title' => '',
+        'NJBUserLinks' => [],
+      ],
+    ],
+    'njb_registration_links' => [
+      'render element' => 'block',
+      'variables' => [
+        'NJBRegistrationLinks' => [],
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_theme_suggestions_form_alter().
+ */
+function napcs_job_board_theme_suggestions_form_alter(array &$suggestions, array $variables) {
+  if ($id = $variables['element']['form_id']['#id']) {
+    $orig = $variables['theme_hook_original'];
+    $suggestions[] = $orig . '__' . str_replace('-', '_', $id);
+  }
+}
+
+/**
+ * Implements hook_user_insert().
+ */
+function napcs_job_board_user_insert($account) {
+  \Drupal::service('napcs_job_board.user_register_helper')->userInsert($account);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view_alter().
+ */
+function napcs_job_board_user_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
+  \Drupal::service('napcs_job_board.user_helper')->userViewAlter($build, $entity, $display);
+}
+
+/**
+ * Implements hook_mail().
+ */
+function napcs_job_board_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'application_employer':
+      $message['subject'] = t('New application for @listing at @org', $params['replacements']);
+      $message['body'][] = t('Hello @employer,', $params['replacements']);
+      $message['body'][] = t('@job_seeker has submitted an application for the @listing listing at @org.', $params['replacements']);
+      $message['body'][] = t('You can view the application at this url: :url', $params['replacements']);
+      break;
+
+    case 'application_job_seeker':
+      $message['subject'] = t('Your application for @listing at @org', $params['replacements']);
+      $message['body'][] = t('Hello @job_seeker,', $params['replacements']);
+      $message['body'][] = t('your application for the @listing listing at @org has been submitted.', $params['replacements']);
+      $message['body'][] = t('You can view the application at this url: :url', $params['replacements']);
+      break;
+
+  }
+}

@@ -1,0 +1,11 @@
+name: NAPCS Model Law
+type: module
+description: NAPCS Model Law Database functionality
+core_version_requirement: ^8 || ^9
+package: NAPCS
+
+config_devel:
+  - migrate_plus.migration.napcs_ml_component
+  - migrate_plus.migration.napcs_ml_state
+  - migrate_plus.migration.napcs_ml_subcomponent
+  - migrate_plus.migration_group.napcs_model_law

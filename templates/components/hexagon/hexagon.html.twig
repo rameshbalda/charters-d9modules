@@ -1,0 +1,50 @@
+{% set attributes = attributes ? attributes : create_attribute() %}
+{% set color = color ? color : 'darkblue' %}
+{% set classes = ['hexagon'] %}
+{% if mask %}
+{% set classes = classes|merge(['hexagon--mask']) %}
+{% endif %}
+{% if url %}
+{% set classes = classes|merge(['hexagon--link']) %}
+<a href="{{ url }}">
+{% endif %}
+<div{{ attributes.addClass(classes).addClass("hexagon--#{color}") }}>
+  <div class="hexagon__middle">
+    <div class="hexagon__content">
+      {% block content %}
+        {% if icon %}
+          <div class="hexagon__icon">
+            {% include '@napcs2017/components/icon/icon.html.twig' with {
+              'color': color,
+              'icon': icon,
+            } %}
+          </div>
+        {% endif %}
+        {% if text %}
+          <div class="hexagon__text">
+            {{ text }}
+          </div>
+        {% endif %}
+        {% if figure %}
+          <div class="hexagon__figure">
+            {{ figure }}
+          </div>
+        {% endif %}
+        {% if unit %}
+          <div class="hexagon__unit">
+            {{ unit }}
+          </div>
+        {% endif %}
+      {% endblock %}
+    </div>
+    {% if overlay %}
+      <div class="hexagon__overlay hexagon__overlay--{{ overlay }}">
+      </div>
+    {% endif %}
+  </div>
+  <div class="hexagon__end hexagon__end--top"></div>
+  <div class="hexagon__end hexagon__end--bottom"></div>
+</div>
+{% if url %}
+</a>
+{% endif %}

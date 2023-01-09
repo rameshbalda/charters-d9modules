@@ -1,0 +1,12 @@
+id: 'napcs_job_board_taxonomy'
+label: 'NAPCS Job Board Taxonomy'
+description: 'Migration of job board taxonomy from WordPress to Drupal 8 for the new NAPCS site.'
+dependencies:
+  enforced:
+    module:
+      - napcs_job_board
+shared_configuration:
+  process:
+    name: title
+  destination:
+    plugin:  entity:taxonomy_term

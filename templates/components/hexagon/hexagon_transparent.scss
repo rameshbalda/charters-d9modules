@@ -1,0 +1,244 @@
+@function hexagon-transparent-end-border-length($angle, $width) {
+  $ratio: 1/cos($angle);
+  @return ($width / 2) * (1 / cos($angle));
+}
+
+@function hexagon-end-height($angle, $width) {
+  @return ($width / 2) * sin($angle);
+}
+
+@function hexagon-transparent-middle-height ($width, $end-height) {
+  @return $width - ($end-height * 2);
+}
+
+@function right-end-border-offset($angle, $border-length) {
+  // Get hex width in terms of border-length.
+  $hex-width: $border-length * cos($angle) * 2;
+  // Get difference of hex width and border length.
+  $offset: $hex-width - $border-length;
+  // Return difference as a percentage of original length.
+  @return $offset / $border-length * 100%;
+}
+
+%hexagon {
+  position: relative;
+}
+
+.hexagon__end {
+  &:before, &:after {
+    content: '';
+    position: absolute;
+    border-top-style: solid;
+    // Anti-alias hack.
+    box-shadow: 0 0 1px transparent;
+  }
+  &:before {
+    transform-origin: top left;
+  }
+  &:after {
+    transform-origin: top right;
+  }
+}
+
+.hexagon__end--top {
+  position: absolute;
+  width: 100%;
+}
+
+.hexagon__end--bottom {
+  transform: rotatex(180deg);
+}
+
+.hexagon__middle {
+  position: relative;
+  border-left-style: solid;
+  border-right-style: solid;
+}
+
+.hexagon__content {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  text-align: center;
+}
+
+.hexagon__icon {
+  width: 33.33333%;
+  margin: auto;
+  @media #{bp-mobile} {
+    width: 60%;
+  }
+}
+
+.hexagon__text {
+  margin-top: 5px;
+  line-height: 1.4;
+  font-size: 20px;
+  @media #{$bp-desktop} {
+    font-size: 16px;
+  }
+  @media #{$bp-tablet} {
+    font-size: 14px;
+  }
+  @media #{$bp-mobile} {
+    font-size: 20px;
+  }
+  font-weight: 500;
+  font-family: $futura;
+  text-transform: uppercase;
+}
+
+.hexagon__figure, .hexagon__unit {
+  font-weight: 600;
+}
+
+.hexagon__figure {
+  font-size: 32px;
+  @media #{$bp-desktop} {
+    font-size: 24px;
+  }
+}
+
+.hexagon__unit {
+  font-size: 16px;
+  @media #{$bp-desktop} {
+    font-size: 14px;
+  }
+  text-transform: uppercase;
+}
+
+@mixin hexagon-transparent($angle, $width) {
+  @extend %hexagon;
+  $end-border-length: hexagon-transparent-end-border-length($angle, $width);
+  $end-height: hexagon-end-height($angle, $width);
+  padding: $end-height 0;
+  width: $width;
+  > .hexagon__end {
+    &:before, &:after {
+      width: $end-border-length;
+    }
+    &:before {
+      transform: rotate(-$angle);
+    }
+    &:after {
+      transform: translatex(right-end-border-offset($angle, $end-border-length)) rotate($angle);
+    }
+    &--top {
+      top: $end-height;
+      //height: $end-height;
+    }
+  }
+  > .hexagon__middle {
+    padding-bottom: hexagon-transparent-middle-height($width, $end-height);
+  }
+}
+
+@mixin hexagon-transparent-border-end($width) {
+  > .hexagon__end {
+    &:before, &:after {
+      border-top-width: $width;
+    }
+  }
+}
+
+@mixin hexagon-transparent-border-middle($width) {
+  > .hexagon__middle {
+    border-left-width: $width;
+    border-right-width: $width;
+  }
+}
+
+@mixin hexagon-transparent-border($width) {
+  @include hexagon-transparent-border-end($width);
+  @include hexagon-transparent-border-middle($width);
+}
+
+@mixin hexagon-transparent-color($color) {
+  > .hexagon__end {
+    &:before, &:after {
+      border-top-color: $color;
+    }
+  }
+  > .hexagon__middle {
+    border-right-color: $color;
+    border-left-color: $color;
+  }
+  > .hexagon__middle {
+    color: $color;
+    a {
+      color: $color;
+    }
+  }
+}
+
+@mixin hexagon-mask($angle, $width, $border-stroke) {
+  $end-border-length: hexagon-transparent-end-border-length($angle, $width);
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  > .hexagon__end {
+    &:before {
+      transform: rotateZ(-$angle) rotateX(180deg) translateY(-$border-stroke);
+    }
+    &:after {
+      transform: translateX(right-end-border-offset($angle, $end-border-length)) rotateZ($angle) rotateX(180deg) translateY(-$border-stroke);
+    }
+  }
+  .hexagon__overlay {
+    position: absolute;
+    top: 50%;
+    transform: translatey(-50%);
+    width: 100%;
+    height: 200%;
+    opacity: 0.5;
+  }
+  @include hexagon-transparent-border-end(500px);
+}
+
+$colors: ('orange' $orange)
+         ('blue' $light-blue)
+         ('red' $red)
+         ('green' $green)
+         ('darkblue' $dark-blue)
+         ('gray' $off-white)
+         ('white' white);
+
+.hexagon {
+  @include hexagon-transparent(15deg, 100%);
+  @include hexagon-transparent-border(8px);
+  @media #{$bp-desktop} {
+    @include hexagon-transparent-border(5px);
+  }
+
+  @each $color in $colors {
+    $color-name: nth($color, 1);
+    $color-value: nth($color, 2);
+    &#{&}--#{$color-name} {
+      @include hexagon-transparent-color($color-value);
+    }
+  }
+
+  &#{&}--link {
+    &:hover {
+      @include hexagon-transparent-border-end(13px);
+      @media #{$bp-desktop} {
+        @include hexagon-transparent-border-end(8px);
+      }
+    }
+  }
+
+  &#{&}--mask {
+    @include hexagon-mask(15deg, 100%, 8px);
+    @media #{$bp-desktop} {
+      @include hexagon-mask(15deg, 100%, 5px);
+    }
+    @each $color in $colors {
+      $color-name: nth($color, 1);
+      $color-value: nth($color, 2);
+      .hexagon__overlay--#{$color-name} {
+        background-color: $color-value;
+      }
+    }
+  }
+}

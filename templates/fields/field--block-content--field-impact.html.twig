@@ -1,0 +1,16 @@
+{% if items %}
+  <div class="row">
+    {% for item in items %}
+      {% if not (loop.index0 % 2) and not (loop.first) %}
+        <div class="clearfix visible-xs-block visible-sm-block"></div>
+      {% endif %}
+      <div {{ item.attributes }}>
+        {% include '@napcs2017/components/hexagon_stat/hexagon_stat.html.twig' with {
+          'figure': item.content.figure,
+          'unit': item.content.unit,
+          'label': item.content.value,
+        } %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

@@ -1,0 +1,72 @@
+{%
+  set classes = [
+    node.bundle|clean_class,
+    node.isPromoted() ? 'is-promoted',
+    node.isSticky() ? 'is-sticky',
+    not node.isPublished() ? 'is-unpublished',
+    view_mode ? view_mode|clean_class,
+    'clearfix',
+  ]
+%}
+
+<article{{ attributes.addClass(classes) }}>
+
+  {{ title_prefix }}
+
+  <div{{ content_attributes.addClass('content') }}>
+    <div class="profile-name col-sm-12">
+      <h2>{{ getProfileName(node.id) }}</h2>
+    </div>
+    <div class="col-md-4" id="user-listing-info">
+      <div class="user-info-wrapper">
+        <div class="prof-info profile-status">
+          <div class="field--label">Profile Status</div>
+          <div class="prof-ready">
+            <div class="field--label">Ready</div>
+          </div>
+          {% if userHasProfilePermission(user.id, node.id) %}
+          <div class="prof-edit">
+            <a href="/node/{{ node.id }}/edit">Edit My Profile</a>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="prof-info profile-email">
+          {{ content.field_email }}
+        </div>
+        {% if content.field_website|render|trim is not empty %}
+          <div class="prof-info profile-website">
+            {{ content.field_website }}
+          </div>
+        {% endif %}
+        {% if content.field_twitter_id|render|trim is not empty %}
+          <div class="prof-info profile-twitter">
+            {{ content.field_twitter_id }}
+          </div>
+        {% endif %}
+        {% if content.field_linkedin_id|render|trim is not empty %}
+          <div class="prof-info profile-linkedin">
+            {{ content.field_linkedin_id }}
+          </div>
+        {% endif %}
+        <div class="prof-info profile-resume">
+          {{ content.field_resume }}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8" id="user-main-content">
+      <div class="bio-wrapper">
+        <div class="field">
+          <div class="field--label">Bio</div>
+          {{ content.body }}
+        </div>
+
+        {{ content.field_teaching_cred }}
+        {{ content.field_edu_phil }}
+        {{ content.field_video }}
+      </div>
+    </div>
+  </div>
+
+</article>

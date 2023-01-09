@@ -1,0 +1,15 @@
+napcs_model_law.template_download:
+  path: '/admin/content/model_law/download'
+  defaults:
+    _title: 'Model Law Downloads'
+    _form: '\Drupal\napcs_model_law\Form\ModelLawDownloadForm'
+  requirements:
+    _permission: 'administer content'
+
+napcs_model_law.landing:
+  path: '/our-work/charter-law-database'
+  defaults:
+    _title: 'Charter Law Database'
+    _controller: '\Drupal\napcs_model_law\Controller\LandingController::content'
+  requirements:
+    _permission: 'access content'

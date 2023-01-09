@@ -1,0 +1,37 @@
+<footer class="page-footer {{ is_front ? 'footer-homepage' }}">
+  <div class="footer-bg">
+    <img class="footer-bg-img" src="{{ '/' ~ directory ~ '/assets/img/footer-background-image.png' }}" />
+    <div class="container">
+      {{ page.footer_hexagons }}
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <div class="visible-xs mobile-donate-links">
+      {{ page.footer_links_middle }}
+      <div class="mobile-email-form">
+        <form class="footer-email-addy">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="YOUR EMAIL ADDRESS">
+            <span class="input-group-btn">
+              <button class="btn" type="button"><i class="fa fa-arrow-right"></i></button>
+            </span>
+          </div>
+        </form>
+      </div>
+    </div>
+    {{ page.footer_left_top }}
+    <div class="row footer-bottom-links">
+      <div class="col-sm-6">
+        {{ page.footer_links_left_bottom }}
+      </div>
+      <div class="col-sm-6 text-right hidden-xs">
+        {{ page.footer_links_middle }}
+      </div>
+      {% if page.footer_email_form %}
+        <div class="col-sm-4 hidden-xs">
+          <div class="footer-email-addy">{{ page.footer_email_form }}</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</footer>

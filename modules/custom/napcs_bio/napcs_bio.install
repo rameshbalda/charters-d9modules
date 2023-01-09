@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * @file
+ * Install and update functions for NAPCS Bios.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function napcs_bio_install() {
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  $bio_nids = \Drupal::entityQuery('node')
+    ->condition('type', 'bio')
+    ->execute();
+  foreach ($bio_nids as $bio_nid) {
+    $bio = $node_storage->load($bio_nid);
+    $bio->save();
+  }
+}
+
+/**
+ * Trim spaces from Bio names so blog migration doesn't get confused.
+ */
+function napcs_bio_update_8001(&$sandbox) {
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  $bio_nids = \Drupal::entityQuery('node')
+    ->condition('type', 'bio')
+    ->execute();
+  foreach ($node_storage->loadMultiple($bio_nids) as $bio) {
+    foreach (['field_first_name', 'field_last_name'] as $field) {
+      $items = $bio->get($field)->getValue();
+      foreach ($items as $delta => $item) {
+        $items[$delta]['value'] = trim($item['value']);
+      }
+      $bio->set($field, $items);
+    }
+    $bio->save();
+  }
+}

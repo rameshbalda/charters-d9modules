@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * @file
+ * Install and update functions for the NAPCS job board.
+ */
+
+use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
+
+/**
+ * Delete placeholder job board page.
+ */
+function napcs_job_board_update_8001(&$sandbox) {
+  if (!isset($_SERVER['PANTHEON_ENVIRONMENT']) || !in_array($_SERVER['PANTHEON_ENVIRONMENT'])) {
+    if ($placeholder = Node::load(343)) {
+      $placeholder->delete();
+    }
+  }
+}
+
+/**
+ * Expire job board listings 6 months or older.
+ */
+function napcs_job_board_update_8002(&$sandbox) {
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  if (!isset($sandbox['#finished'])) {
+    $sandbox['targets'] = $node_storage->getQuery()
+      ->condition('type', 'job_listing')
+      ->condition('status', NodeInterface::PUBLISHED)
+      ->condition('field_posted_date', strftime('%Y-%m-%d', strtotime('now - 90 days')), '<')
+      ->execute();
+    $sandbox['total'] = count($sandbox['targets']);
+  }
+  $batch_nids = array_splice($sandbox['targets'], 0, 100);
+  foreach ($node_storage->loadMultiple($batch_nids) as $node) {
+    $node->setUnpublished()->save();
+  }
+  $progress = $sandbox['total'] - count($sandbox['targets']);
+  $sandbox['#finished'] = $progress / $sandbox['total'];
+}

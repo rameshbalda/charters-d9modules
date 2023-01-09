@@ -1,0 +1,38 @@
+{% extends '@bootstrap/block/block.html.twig' %}
+{% block content %}
+<div class="col-xs-6 col-sm-offset-2 col-sm-4 col-md-offset-1 col-md-2">
+  {% include '@napcs2017/components/hexagon_stat/hexagon_stat.html.twig' with {
+  'figure': 44,
+  'label': 'states & D.C. have charter schools',
+  } %}
+</div>
+<div class="col-xs-6 col-sm-4 col-md-2">
+  {% include '@napcs2017/components/hexagon_stat/hexagon_stat.html.twig' with {
+  'figure': 3.4,
+  'unit': 'million',
+  'label': 'students attend charter schools',
+  } %}
+</div>
+<div class="clearfix visible-xs-block visible-sm-block"></div>
+<div class="col-xs-6 col-sm-offset-2 col-sm-4 col-md-offset-0 col-md-2">
+  {% include '@napcs2017/components/hexagon_stat/hexagon_stat.html.twig' with {
+  'figure': '7700',
+  'label': 'charter schools nationwide',
+  } %}
+</div>
+<div class="col-xs-6 col-sm-4 col-md-2">
+  {% include '@napcs2017/components/hexagon_stat/hexagon_stat.html.twig' with {
+  'figure': '$440',
+  'unit': 'million',
+  'label': 'in charter schools program funding',
+  } %}
+</div>
+<div class="clearfix visible-xs-block visible-sm-block"></div>
+<div class="col-xs-offset-3 col-xs-6 col-sm-offset-4 col-sm-4 col-md-offset-0 col-md-2">
+  {% include '@napcs2017/components/hexagon_stat/hexagon_stat.html.twig' with {
+  'figure': 206,
+  'unit': 'thousand',
+  'label': 'charter schools teachers',
+  } %}
+</div>
+{% endblock %}

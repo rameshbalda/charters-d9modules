@@ -1,0 +1,53 @@
+<?php
+
+/**
+ * @file
+ * Contains napcs_share.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_help().
+ */
+function napcs_share_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the napcs_share module.
+    case 'help.page.napcs_share':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('NAPCS social network share integrations') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Return an array of social media share buttons render arrays.
+ *
+ * @param string $title
+ *   The title of the content to share.
+ * @param \Drupal\Core\Url $url
+ *   The url of the content to share.
+ *
+ * @return array[]
+ *   An array of render arrays.
+ */
+function napcs_share_buttons($title, Url $url) {
+  $elements = \Drupal::service('element_info')->getDefinitions();
+  $share_buttons = array_reduce($elements, function ($share_buttons, $element) use ($title, $url) {
+    if ($element['provider'] == 'napcs_share') {
+      $share_buttons[] = [
+        '#type' => $element['id'],
+        '#title' => $title,
+        '#url' => $url,
+      ];
+    }
+    return $share_buttons;
+  }, []);
+  $share_buttons['#prefix'] = '<div class="vertical-align-center">';
+  $share_buttons['#suffix'] = '</div>';
+  return $share_buttons;
+}

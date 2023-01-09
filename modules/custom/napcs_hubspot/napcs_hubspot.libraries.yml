@@ -1,0 +1,16 @@
+hubspot:
+  js:
+    '//js.hsforms.net/forms/v2.js': { type: external, minified: true }
+    '//js.hsforms.net/forms/v2-legacy.js': { type: external, minified: true }
+
+tracking:
+  js:
+    '//js.hs-scripts.com/560116.js': { type: external, minified: true, attributes: { async: true, defer: true } }
+
+blog:
+  js:
+    js/napcs_hubspot.blog.js: {}
+
+signup:
+  js:
+    js/napcs_hubspot.signup.js: {}

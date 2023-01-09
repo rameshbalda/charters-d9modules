@@ -1,0 +1,50 @@
+id: napcs_media
+label: Media
+migration_group: napcs_media
+migration_tags:
+  - media
+  - file
+  - image
+migration_dependencies:
+  required:
+    - napcs_attachment
+
+source:
+  fields:
+    created:
+      name: created
+      selector: wp:post_date
+
+process:
+  name:
+    plugin: callback
+    callable: basename
+    source: url
+  created:
+    plugin: callback
+    callable: strtotime
+    source: created
+  file_id:
+    plugin: migration_lookup
+    migration: napcs_attachment
+    source: id
+  'field_file/target_id':
+    plugin: default_value
+    source: '@file_id'
+  'field_image/target_id':
+    plugin: default_value
+    source: '@file_id'
+  bundle:
+    plugin: media_bundle
+    source: '@name'
+  status:
+    plugin: default_value
+    default_value: 1
+
+destination:
+  plugin: entity:media
+
+dependencies:
+  enforced:
+    module:
+      - napcs_migrate

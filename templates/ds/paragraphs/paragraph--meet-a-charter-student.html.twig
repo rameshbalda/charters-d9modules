@@ -1,0 +1,36 @@
+{% set bgcolor = paragraph.field_background_color.value|striptags %}
+{% extends "@napcs2017/ds/paragraphs/paragraph.html.twig" %}
+{% block content %}
+<div class="container">
+  {{ content.field_section_title }}
+  <div class="row hex-user-callout">
+    <div class="col-sm-3 profile-image">
+      {% embed '@napcs2017/components/hexagon/hexagon.html.twig' with {
+        'attributes': hex_attributes,
+        'color': bgcolor,
+        'mask': true,
+        'overlay': paragraph.field_image_color_overlay.entity.label,
+      } %}
+        {% block content %}{% endblock %}
+      {% endembed %}
+    </div>
+    <div class="col-sm-9">
+      {{ content.field_student_bio }}
+      <div class="profile-info">
+        <div class="row">
+          {% if paragraph.field_student_name.value %}
+          <div class="col-sm-6 user">{{ paragraph.field_student_name.value }}</div>
+          {% else %}
+          <div class="col-sm-6 empty"></div>
+          {% endif %}
+          {% if paragraph.field_meet_a_student_link.0.title %}
+            <div class="col-sm-6 text-right">
+              <a class="btn btn-{{ bgcolor == 'white' ? 'gray' : 'white' }}" href="{{ paragraph.field_meet_a_student_link.0.url }}">{{ paragraph.field_meet_a_student_link.0.title }}</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

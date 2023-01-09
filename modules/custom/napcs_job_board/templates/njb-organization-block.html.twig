@@ -1,0 +1,21 @@
+{% if org.org_id %}
+<div class="organization-wrapper">
+  {% if org.org_name %}
+  <div class="org-field org-name">
+    <div class="org-field-title">NAME</div>
+    <div class="org-field-content">{{ org.org_name }}</div>
+  </div>
+  {% endif %}
+  {% if org.org_description %}
+  <div class="org-field org-desc">
+    <div class="org-field-title">DESCRIPTION</div>
+    <div class="org-field-content">{{ org.org_description }}</div>
+  </div>
+  {% endif %}
+  <div class="org-field org_edit_profile text-center">
+    <div class="org-field-content">
+      <a href="/node/{{ org.org_id }}/edit">View Your Full Profile & Edit</a>
+    </div>
+  </div>
+</div>
+{% endif %}

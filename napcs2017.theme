@@ -1,0 +1,583 @@
+<?php
+
+/**
+ * @file
+ * Bootstrap sub-theme.
+ *
+ * Place your custom PHP code in this file.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Render\Element;
+use Drupal\Core\Template\Attribute;
+use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ */
+function napcs2017_theme_suggestions_image_alter(&$suggestions, $variables) {
+  if ($variables['style_name']) {
+    $suggestions[] = "image__{$variables['style_name']}";
+  }
+}
+
+/**
+ * Implements hook_theme_suggestion_HOOK_alter().
+ */
+function napcs2017_theme_suggestions_page_alter(array &$suggestions, array $variables) {
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if (!($node instanceof NodeInterface)) {
+    return FALSE;
+  }
+  $suggestions[] = 'page__' . $node->getType();
+}
+
+/**
+ * Lets lay down views template suggestions as well.
+ */
+function napcs2017_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
+  if (isset($variables['view'])) {
+    $view = $variables['view'];
+    $suggestions[] = 'views_view__' . $view->id();
+    $suggestions[] = 'views_view__' . $view->id() . '_' . $view->current_display;
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ */
+function napcs2017_theme_suggestions_block_alter(&$suggestions, $variables, $hook) {
+  if (empty($variables['elements']['content']['#block_content'])) {
+    return;
+  }
+  $suggestions[] = 'block__' . $variables['elements']['content']['#block_content']->bundle();
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function napcs2017_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form_id == 'views_exposed_form') {
+    $form['keys']['#attributes']['placeholder'] = t('KEYWORD');
+    $form['type']['#options']['All'] = t('PUBLICATION TYPE');
+    $form['tags']['#options']['All'] = t('TAGS');
+    $form['field_job_category_target_id']['#options']['All'] = t('CLASSIFICATION');
+    $form['field_job_category_target_id']['#attributes'] = ['data-placeholder' => t('CLASSIFICATION')];
+    $form['field_school_level_target_id']['#attributes'] = ['data-placeholder' => t('SCHOOL LEVEL')];
+    $form['field_job_type_target_id']['#attributes'] = ['data-placeholder' => t('JOB TYPE')];
+    $form['field_address_administrative_area']['#attributes'] = ['data-placeholder' => t('STATE')];
+  }
+}
+
+/**
+ * Implements hook_preprocess_form_element().
+ */
+function napcs2017_preprocess_form_element(&$variables) {
+  // Add class to multi-select elements.
+  if (isset($variables['element']['#multiple']) && $variables['element']['#multiple']) {
+    $variables['attributes']['class'][] = 'multiselect';
+  }
+}
+
+/**
+ * Return a link to a bio's social network account.
+ */
+function _napcs2017_social_link($node, $network, $base_url = NULL) {
+  $field = "field_{$network}_id";
+  if ($uri = $node->$field->value) {
+    if ($base_url && strpos($uri, '@') === 0) {
+      $uri = str_replace('@', $base_url, $uri);
+    }
+    $url = Url::fromUri($uri);
+    $icon = t('<i class="fa fa-@network"></i><span class="sr-only">@network</i>', ['@network' => $network]);
+    $link = Link::fromTextAndUrl($icon, $url);
+    return $link;
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function napcs2017_preprocess_node(&$variables) {
+  $node = $variables['node'];
+  switch ($node->getType()) {
+    case 'bio':
+      $networks = [
+        'twitter' => 'http://twitter.com/',
+        'linkedin' => NULL,
+      ];
+      foreach ($networks as $network => $base_url) {
+        $variables['social_links'][$network] = _napcs2017_social_link($node, $network, $base_url);
+      }
+      if (views_get_view_result('news_item', 'block_1')) {
+        $variables['news_items'] = views_embed_view('news_item', 'block_1');
+      }
+      break;
+
+    case 'ml_state':
+      // Add download button to Model Law State pages.
+      $media = $node->field_ml_one_pager->referencedEntities();
+      if ($media) {
+        $file = $media[0]->field_file->referencedEntities()[0];
+        $options = [
+          'attributes' => [
+            'class' => ['btn', 'btn-primary'],
+            'target' => '_blank',
+          ],
+        ];
+        $file_url = Url::fromUri(file_create_url($file->getFileUri()), $options);
+        $link = Link::fromTextandUrl(t('Download Now'), $file_url);
+        $variables['download_button'] = $link;
+      }
+      break;
+
+    case 'news_item':
+      // Add share buttons to news items.
+      $meta_fields = [
+        'field_news_item_types',
+        'field_author_bio',
+        'field_pub_date',
+      ];
+      foreach ($meta_fields as $meta_field) {
+        if (isset($variables['content'][$meta_field])) {
+          $meta_items[] = $variables['content'][$meta_field];
+          unset($variables['content'][$meta_field]);
+        }
+      }
+      $title = $node->getTitle();
+      $url = $node->toUrl();
+      $meta_items[] = napcs_share_buttons($title, $url);
+      $variables['meta_items'] = $meta_items;
+
+      // Add external podcast links to podcast news items
+      $term_objects = $node->get('field_news_item_types')->referencedEntities();
+      $term_names = array_map(function($term) {
+        return $term->get('name')->value;
+      }, $term_objects);
+      if (in_array("Podcast", $term_names)) {
+        $variables['podcast_links'] = [
+          [
+            'service' => 'Amazon Music',
+            'icon' => 'amazon-music',
+            'link' => 'https://www.amazon.com/Get-Schooled-on-Public-Education/dp/B0B5YD9BVD/ref=sr_1_1',
+          ],
+          [
+            'service' => 'Apple Podcasts',
+            'icon' => 'apple-podcasts',
+            'link' => 'https://podcasts.apple.com/us/podcast/get-schooled-on-public-education/id1634061443',
+          ],
+          [
+            'service' => 'iHeart',
+            'icon' => 'iheart',
+            'link' => 'https://www.iheart.com/podcast/53-get-schooled-on-public-educ-99111833/',
+          ],
+          [
+            'service' => 'Spotify',
+            'icon' => 'spotify',
+            'link' => 'https://open.spotify.com/show/4tTk6YsM3JTDLUwKBqo7le',
+          ],
+          [
+            'service' => 'Google Podcasts',
+            'icon' => 'google-podcasts',
+            'link' => 'https://open.spotify.com/show/4tTk6YsM3JTDLUwKBqo7le',
+          ],
+          [
+            'service' => 'Podcast Addict',
+            'icon' => 'podcast-addict',
+            'link' => 'https://podcastaddict.com/podcast/4022843',
+          ],
+          [
+            'service' => 'Podchaser',
+            'icon' => 'podchaser',
+            'link' => 'https://www.podchaser.com/podcasts/get-schooled-on-public-educati-4785979',
+          ],
+          [
+            'service' => 'Deezer',
+            'icon' => 'deezer',
+            'link' => 'https://www.deezer.com/search/get%20schooled%20on%20public%20education',
+          ],
+        ];
+      }
+      break;
+
+    case 'stories_and_impact':
+      // Link stories and impact image and title to link url.
+      if ($variables['view_mode'] == 'teaser') {
+        if ($link_item = $node->field_link->first()) {
+          $variables['url'] = $link_item->getValue()['uri'];
+          if (isset($variables['content']['field_image_media'])) {
+            foreach (Element::children($variables['content']['field_image_media']) as $delta) {
+              $variables['content']['field_image_media'][$delta]['#url'] = $variables['url'];
+            }
+          }
+        }
+      }
+      break;
+
+    case 'webinar':
+      if ($variables['view_mode'] != 'teaser') {
+        break;
+      }
+      if ($node->field_webinar_register->isEmpty()) {
+        $variables['url'] = FALSE;
+      }
+      else {
+        $variables['url'] = $node->field_webinar_register->uri;
+      }
+      break;
+
+  }
+}
+
+/**
+ * Implements hook_preprocess_paragraph().
+ */
+function napcs2017_preprocess_paragraph(&$variables) {
+  $paragraph = $variables['paragraph'];
+  // @todo move this into preprocess_field and field template.
+  if ($paragraph->hasField('field_student_image') && $paragraph->field_student_image->count()) {
+    $student_image_uri = $paragraph
+      ->field_student_image->referencedEntities()[0]
+      ->field_image->referencedEntities()[0]
+      ->getFileUri();
+    $student_image_url = file_create_url($student_image_uri);
+    $variables['hex_attributes'] = new Attribute([
+      'style' => "background-image: url(\"{$student_image_url}\");",
+    ]);
+  }
+
+  if ($paragraph->getType() == 'two_column_with_gray_background') {
+    $variables['attributes']['class'][] = 'gray-bg';
+  }
+
+  if ($paragraph->hasField('field_background_color')) {
+    $bg_item = $paragraph->field_background_color->first();
+    if ($bg_item) {
+      $variables['attributes']['class'][] = $bg_item->getValue()['value'] . '-bg';
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function napcs2017_preprocess_page(&$variables) {
+  $node = \Drupal::routeMatch()->getParameter('node');
+  $variables['is_basic_page'] = ($node instanceof NodeInterface) && $node->getType() == 'page';
+}
+
+/**
+ * Implements hook_preprocess_field().
+ */
+function napcs2017_preprocess_field(&$variables) {
+  $element = $variables['element'];
+  $object = $element['#object'];
+  $bundle = $object->bundle();
+  $view_mode = $element['#view_mode'];
+  switch ($variables['field_name']) {
+    case 'description':
+      if (in_array($bundle, ['news_item_types', 'tags'])) {
+        $variables['attributes']['class'][] = 'lead';
+      }
+      break;
+
+    case 'field_column_button':
+      // Add button classes to link field.
+      foreach ($variables['items'] as $delta => $item) {
+        $variables['items'][$delta]['content']['#options']['attributes']['class'][] = 'btn btn-white';
+      }
+      break;
+
+    case 'field_comments':
+      $variables['url'] = $object->toUrl('canonical', ['absolute' => TRUE])
+        ->toString();
+      break;
+
+    case 'field_image_media':
+      // Add 'image-right' class to images on news teasers.
+      if ($bundle == 'news_item' && $view_mode == 'teaser') {
+        $variables['attributes']['class'][] = 'image-right';
+      }
+      break;
+
+    case 'field_impact':
+      foreach ($variables['items'] as $delta => $item) {
+        $key = trim($item['content']['key']['#plain_text'], ' :');
+        $parts = explode(' ', $key, 2);
+        $variables['items'][$delta]['content']['figure']['#plain_text'] = array_shift($parts);
+        if ($parts) {
+          $variables['items'][$delta]['content']['unit']['#plain_text'] = array_shift($parts);
+        }
+        $item['attributes']->addClass('col-xs-6', 'col-sm-4', 'col-md-2');
+        if ($delta % 2 === 0) {
+          $item['attributes']->addClass(
+            $delta == count($variables['items']) - 1 ? 'col-xs-offset-3 col-sm-offset-4' : 'col-sm-offset-2',
+            $delta ? 'col-md-offset-0' : 'col-md-offset-1'
+          );
+        }
+      }
+      break;
+
+    case 'field_link':
+      // Add button classes to link field.
+      $is_link_item = $bundle == 'link_item';
+      foreach ($variables['items'] as $delta => $item) {
+        $variables['items'][$delta]['content']['#options']['attributes']['class'][] = 'btn';
+        $variables['items'][$delta]['content']['#options']['attributes']['class'][] = 'btn-gray';
+        if ($is_link_item) {
+          $variables['items'][$delta]['content']['#title'] = 'Read more';
+        }
+      }
+      break;
+
+    case 'field_link_items':
+      $variables['items'] = napcs2017_grid_rows($variables['items'], [
+        'sm' => '6',
+        'md' => 4,
+        'lg' => 4,
+      ]);
+      break;
+
+    case 'field_ml_score_meanings':
+      $weight = $object->field_ml_weight->value;
+      foreach ($variables['items'] as $delta => $item) {
+        $weighted = $delta * $weight;
+        $variables['items'][$delta]['content']['#template'] = '{{ delta }} &times; {{ weight }} = <strong>{{ weighted }}</strong> &mdash; {{ value|nl2br }}';
+        $variables['items'][$delta]['content']['#context'] += compact('delta', 'weight', 'weighted');
+      }
+      break;
+
+    case 'field_news_item_types':
+      // Add 'uppercase' class to news items types field everywhere.
+      $variables['attributes']['class'][] = 'uppercase';
+      break;
+
+    case 'field_social_share':
+      if (!$element['#items']->value) {
+        break;
+      }
+      $uri_item = $object->field_column_button->first();
+      if (!$uri_item) {
+        break;
+      }
+      $url = Url::fromUri($uri_item->getValue()['uri']);
+      $title = $object->field_section_title->value;
+      $variables['share'] = napcs_share_buttons($title, $url);
+      $variables['share']['#prefix'] .= '<span class="uppercase">Share</span>';
+      break;
+
+    case 'field_webinar_date':
+      $variables['attributes']['class'][] = 'metabar';
+      break;
+
+    case 'field_webinar_image':
+      if ($object->field_webinar_register->isEmpty()) {
+        break;
+      }
+      foreach ($variables['items'] as $delta => $item) {
+        $url = $object->field_webinar_register->get($delta)->getUrl();
+        $url->setOption('attributes', ['target' => '_blank']);
+        $variables['items'][$delta]['content']['#url'] = $url;
+      }
+      break;
+
+    case 'field_webinar_register':
+      foreach ($variables['items'] as $delta => $item) {
+        $variables['items'][$delta]['content']['#attributes']['class'][] = 'btn btn-gray btn-lg';
+      }
+      break;
+
+  }
+}
+
+/**
+ * Implements hook_preprocess_view().
+ */
+function napcs2017_preprocess_views_view_unformatted(&$variables) {
+  switch ($variables['view']->id()) {
+    case 'bios':
+      $breakpoint_columns = ['sm' => 6, 'md' => 3, 'lg' => 3];
+      break;
+
+    case 'publications':
+    case 'stories_and_impact':
+      $breakpoint_columns = ['sm' => 6, 'md' => 4, 'lg' => 4];
+      break;
+
+    case 'taxonomy_term':
+      $term = \Drupal::routeMatch()->getParameter('taxonomy_term');
+      if ($term) {
+        switch ($term->bundle()) {
+          case 'news_item_types':
+          case 'tags':
+            $breakpoint_columns = ['xs' => 12];
+            break;
+
+          default:
+            $breakpoint_columns = ['sm' => 6, 'md' => 4, 'lg' => 4];
+            break;
+
+        }
+      }
+      break;
+
+  }
+  if (isset($breakpoint_columns)) {
+    $variables['rows'] = napcs2017_grid_rows($variables['rows'], $breakpoint_columns);
+  }
+}
+
+/**
+ * Add grid classes and clearfix elements to a list of rows.
+ *
+ * @param array $items
+ *   An array of items to be laid out.
+ * @param int[] $breakpoint_columns
+ *   An associative array whose keys are two-letter breakpoint codes (xs, sm,
+ *   md, or lg) and whose values are the number of columns each item should
+ *   occupy for that breakpoint.
+ *
+ * @return array
+ *   An array of items with grid classes and clearfix elements added.
+ */
+function napcs2017_grid_rows(array $items, array $breakpoint_columns) {
+  // Prepare grid classes.
+  foreach ($breakpoint_columns as $breakpoint => $columns_per_item) {
+    $column_classes[] = "col-$breakpoint-$columns_per_item";
+  }
+  foreach ($items as $index => $item) {
+    // Add grid classes to item.
+    if (is_array($item['attributes']['class'])) {
+      $item['attributes']['class'] += $column_classes;
+    }
+    else {
+      $item['attributes']['class'] = $column_classes;
+    }
+    // If this is not the first item, add a clearfix, maybe.
+    if ($index) {
+      $clearfix_breakpoints = napcs2017_clearfix_breakpoints($index, $breakpoint_columns);
+      if ($clearfix_breakpoints) {
+        // If this clearfix should be visible at all relevant breakpoints, just
+        // create a plain <div class="clearfix"> instead of adding all the
+        // responsive classes.
+        if (count($clearfix_breakpoints) == count($breakpoint_columns)) {
+          $clearfix_breakpoints = [];
+        }
+        $new_items[] = napcs2017_clearfix_element($clearfix_breakpoints);
+      }
+    }
+    $new_items[] = $item;
+  }
+  $new_items[] = napcs2017_clearfix_element();
+  return $new_items;
+}
+
+/**
+ * Return a list of breakpoints a clearfix should be visible at.
+ *
+ * @param int $index
+ *   The index of the current item.
+ * @param int[] $breakpoint_columns
+ *   An associative array whose keys are two-letter breakpoint codes (xs, sm,
+ *   md, or lg) and whose values are the number of columns each item should
+ *   occupy for that breakpoint.
+ *
+ * @return array
+ *   An array of breakpoints that the clearfix after $index should be visible
+ *   at. Could be empty, meaning no clearfix should be after this item.
+ */
+function napcs2017_clearfix_breakpoints($index, array $breakpoint_columns) {
+  $clearfix_breakpoints = [];
+  foreach ($breakpoint_columns as $breakpoint => $columns_per_item) {
+    if (napcs2017_start_new_row($index, $columns_per_item)) {
+      $clearfix_breakpoints[] = $breakpoint;
+    }
+  }
+  return $clearfix_breakpoints;
+}
+
+/**
+ * Return a boolean indicating if the current $index is the start of a new row.
+ */
+function napcs2017_start_new_row($index, $columns_per_item, $columns_per_row = 12) {
+  $items_per_row = $columns_per_row / $columns_per_item;
+  // No clearfixes needed for 1-column layout.
+  if ($items_per_row === 1) {
+    return FALSE;
+  }
+  return $index % $items_per_row == 0;
+}
+
+/**
+ * Create a clearfix render element visible at the giver breakpoints.
+ *
+ * @param string[] $breakpoints
+ *   An array containing any of the elements 'xs', 'sm', 'md', 'lg'.
+ *
+ * @return array
+ *   A clearfix render element.
+ */
+function napcs2017_clearfix_element(array $breakpoints = []) {
+  $attributes = new Attribute();
+  $attributes->addClass('clearfix');
+  foreach ($breakpoints as $breakpoint) {
+    $attributes->addClass("visible-$breakpoint-block");
+  }
+  $clearfix = compact('attributes');
+  return $clearfix;
+}
+
+/**
+ * Implements hook_preprocess_taxonomy_term().
+ */
+function napcs2017_preprocess_taxonomy_term(&$variables) {
+  if ($variables['view_mode'] == 'full') {
+    $variables['attributes']['class'][] = 'col-xs-12';
+    $variables['attributes']['class'][] = 'card';
+  }
+}
+
+/**
+ * Implements hook_preprocess_comment().
+ */
+function napcs2017_preprocess_comment(&$variables) {
+  $variables['created'] = \Drupal::service('date.formatter')->format($variables['comment']->getCreatedTime(), 'short');
+}
+
+/**
+ * Implements hook_preprocess_page_title().
+ */
+function napcs2017_preprocess_page_title(&$variables) {
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node && $node->getType() == 'ml_component') {
+    $position = $node->field_ml_position->value;
+    $variables['title'] = [
+      '#markup' => $position . '. ' . $node->getTitle(),
+    ];
+  }
+}
+
+/**
+ * Implements hook_preprocess_block__BLOCK_ID().
+ */
+function napcs2017_preprocess_block__views_block__webinars_upcoming(&$variables) {
+  $variables['attributes']['class'][] = 'container';
+}
+
+/**
+ * Implements hook_preprocess_block__BLOCK_ID().
+ */
+function napcs2017_preprocess_block__views_block__webinars_past(&$variables) {
+  $variables['attributes']['class'][] = 'container';
+}
+
+/**
+ * Implements hook_preprocess_image__STYLE_ID().
+ */
+function napcs2017_preprocess_image__hexagon(&$variables) {
+  $variables['hex_attributes'] = new Attribute([
+    'style' => "background-image: url(\"{$variables['uri']}\");",
+  ]);
+}

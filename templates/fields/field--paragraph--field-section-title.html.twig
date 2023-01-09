@@ -1,0 +1,24 @@
+<h3 class="section-title">{% if label_hidden %}
+  {% if multiple %}
+      {% for item in items %}
+        
+      {% endfor %}
+  {% else %}
+    {% for item in items %}
+      {{ item.content }}
+    {% endfor %}
+  {% endif %}
+{% else %}
+  
+    {{ label }}
+    {% if multiple %}
+      
+    {% endif %}
+    {% for item in items %}
+      {{ item.content }}
+    {% endfor %}
+    {% if multiple %}
+     
+    {% endif %}
+ 
+{% endif %}</h3>

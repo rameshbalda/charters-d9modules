@@ -1,0 +1,6 @@
+{% include '@napcs2017/components/card/card.html.twig' with {
+  meta_items: [content.field_link_source],
+  content: [content|without('field_link_source', 'field_section_title')],
+  url: paragraph.field_link.0.url,
+  title: paragraph.field_section_title.0.value,
+} %}

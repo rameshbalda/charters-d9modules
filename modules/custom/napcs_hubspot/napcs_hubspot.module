@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * Contains napcs_hubspot.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function napcs_hubspot_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the napcs_hubspot module.
+    case 'help.page.napcs_hubspot':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('NAPCS Hubspot integration') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function napcs_hubspot_theme() {
+  return [
+    'napcs_hubspot_blog_block' => [
+      'render element' => 'children',
+    ],
+    'napcs_hubspot_signup_block' => [
+      'render element' => 'children',
+    ],
+  ];
+}

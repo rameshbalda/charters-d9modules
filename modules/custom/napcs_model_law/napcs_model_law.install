@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * @file
+ */
+
+use Drupal\napcs_model_law\ModelLawData;
+
+/**
+ * @file
+ * Install and update functions for NAPCS Model Law database.
+ */
+
+/**
+ * Delete score descriptions and subcomponent fields so we can change types.
+ */
+function napcs_model_law_update_8001(&$sandbox) {
+  $targets = [
+    'field_ml_subcomponents',
+    'field_ml_score_meanings',
+  ];
+
+  foreach ($targets as $field_name) {
+    $properties = [
+      'field_name' => $field_name,
+      'include_deleted' => TRUE,
+    ];
+    $entity_manager = \Drupal::entityTypeManager();
+    $fields = $entity_manager->getStorage('field_config')->loadByProperties($properties);
+    foreach ($fields as $field) {
+      // Proceed only if the module implementing the entity has not been uninstalled already.
+      $entity_manager->getStorage($field->get('entity_type'))->purgeFieldData($field, 100);
+      field_purge_field($field);
+      $field->delete();
+    }
+  }
+}
+
+/**
+ * Set state and component aliases.
+ */
+function napcs_model_law_update_8002(&$sandbox) {
+  foreach (['states', 'components'] as $method) {
+    $nodes = ModelLawData::{$method}();
+    foreach ($nodes as $node) {
+      $node->save();
+    }
+  }
+}
+
+/**
+ * Try again for state and component aliases.
+ */
+function napcs_model_law_update_8003(&$sandbox) {
+  napcs_model_law_update_8002($sandbox);
+}
+
+/**
+ * Recalculate state scores with correct rounding.
+ */
+function napcs_model_law_update_8004(&$sandbox) {
+  $data = \Drupal::service('napcs_model_law.data');
+  foreach ($data->states() as $state) {
+    $data->updateStateScore($state);
+  }
+}

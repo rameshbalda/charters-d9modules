@@ -1,0 +1,11 @@
+id: napcs_job_board_category
+label: 'NAPCS Job Board categories'
+description: 'Migration of job categories from WordPress to Drupal 8 for the new NAPCS site.'
+source_type: 'SQL source'
+migration_group: napcs_job_board_taxonomy
+
+source:
+  plugin: job_board_category
+
+destination:
+  default_bundle: job_category

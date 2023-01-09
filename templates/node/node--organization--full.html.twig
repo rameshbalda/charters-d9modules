@@ -1,0 +1,24 @@
+{%
+  set classes = [
+    node.bundle|clean_class,
+    node.isPromoted() ? 'is-promoted',
+    node.isSticky() ? 'is-sticky',
+    not node.isPublished() ? 'is-unpublished',
+    view_mode ? view_mode|clean_class,
+    'clearfix',
+  ]
+%}
+
+<article{{ attributes.addClass(classes) }}>
+  <div class="row">
+    <div class="col-sm-8">
+      {{ content.body }}
+    </div>
+    <div class="col-sm-4">
+      {{ content.field_logo }}
+      {{ content.field_address }}
+      {{ content.field_email }}
+      {{ content.field_website }}
+    </div>
+  </div>
+</article>

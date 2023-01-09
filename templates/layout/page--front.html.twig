@@ -1,0 +1,39 @@
+<div class="page">
+  <a name="Top" id="Top"></a>
+  {% include directory ~ '/templates/layout/header.html.twig' %}
+  <div id="main" class="content-area front-page-content" role="main">
+    <a id="main-content"></a>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          {{ page.highlighted }}
+          {% if action_links %}
+            <nav class="action-links">{{ action_links }}</nav>
+          {% endif %}
+          {{ page.content_top }}
+        </div>
+      </div>
+    </div>
+    <div class="homepage-top">
+      <div class="container-fluid hero-row">
+          {{ page.homepage_hero_row_one }}
+      </div>
+
+      <div class="container-fluid hero-row">
+        {{ page.homepage_hero_row_two }}
+      </div>
+
+      <div class="container below-triangle">
+        <div class="row">
+          <div class="col-sm-12">
+            {{ page.homepage_angled_white_box }}
+          </div>
+        </div>
+      </div>
+    </div>
+    {{ page.homepagecontent }}
+    {{ page.content_lower }}
+    <a href="#Top" class="btn-btt" title="Back to Top" style="display: block;"></a>
+    {% include directory ~ '/templates/layout/footer.html.twig' %}
+  </div>
+</div>

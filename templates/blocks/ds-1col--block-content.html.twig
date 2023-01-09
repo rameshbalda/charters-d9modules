@@ -1,0 +1,83 @@
+{#
+/**
+ * @file
+ * Display Suite 1 column template.
+ *
+ * Available variables:
+ * - ds_content_wrapper: wrapper around content
+ * - attributes: content region attributes
+ * - ds_content: content region
+ */
+#}
+
+{% set hero_type = ds_content.field_hero_type.0['#markup'] %}
+
+{% if ds_content.field_overlay_color.0['#markup'] is not null %}
+  {% set overlay = 'overlay-' ~ ds_content.field_overlay_color.0['#markup'] %}
+{% endif %}
+
+{% if ds_content.field_link.0['#plain_text'] is not null %}
+  {% set link = ds_content.field_link.0['#plain_text'] %}
+{% endif %}
+
+{% if link starts with 'http' %}
+ {% set target = "_blank" %}
+{% else %}
+  {% set target = "_self" %}
+{% endif %}
+
+{% if hero_type == 'large-text' or hero_type == 'text-only' %}
+  {% set show_subtitle = true %}
+  {% set sub_title = '<h3 class ="h4 hero-subtitle">' ~ ds_content.field_subtitle.0['#context']['value'] ~ '</h3>' %}
+{% endif %}
+
+{% if hero_type != 'image-large' %}
+  {% set show_title = true %}
+  {% set title = '<h2 class="h3 hero-title">' ~ ds_content.field_title.0['#context']['value'] ~ '</h2>' %}
+{% endif %}
+
+{% if hero_type == 'image-large' or hero_type == 'text-image' %}
+  {% set show_image = true %}
+{% endif %}
+<{{ ds_content_wrapper }}{{ attributes.addClass(hero_type, overlay) }}>
+
+  {{ title_suffix.contextual_links }}
+
+  {% if link is not null %}
+    <a href="{{ link }}" target="{{ target }}" class="d-block">
+  {% endif %}
+    {% if show_image %}
+      {{ds_content.field_image }}
+      <div class="color-overlay"></div>
+    {% endif %}
+
+    {% if show_subtitle and hero_type != 'large-text' %}
+      {{ sub_title|raw }}
+    {% endif %}
+
+    {% if show_subtitle and hero_type == 'large-text' %}
+      <h3 class ="h4 hero-subtitle">
+       {{ ds_content.field_subtitle.0['#context']['value'] }} <span class="typewrite text-red" data-period="2000" data-type="[{{ ds_content.field_rotating_text.0['#context']['value'] }}]"><span class="wrap"></span></span>
+      </h3>
+    {% endif %}
+
+    {% if show_title %}
+      {{ title|raw }}
+    {% endif %}
+
+    {% if hero_type == 'large-text' %}
+      <div class="row row-no-gutters">
+        <div class="col-md-5 col-sm-12 col-xs-12 button-container">
+          <a class="btn btn-red" href="{{ link }}" target="{{ target }}">{{ ds_content.field_button_text.0['#context']['value'] }} <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+        <div class="col-md-7 col-sm-12 col-xs-12 text-right check-text">
+          {{ ds_content.field_checkmark_text }}
+        </div>
+      </div>
+    {% endif %}
+
+  {% if link is not null %}
+    </a>
+  {% endif %}
+
+</{{ ds_content_wrapper }}>

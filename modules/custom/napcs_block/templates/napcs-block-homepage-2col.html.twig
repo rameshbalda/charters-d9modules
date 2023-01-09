@@ -1,0 +1,12 @@
+<div class="container">
+  <div class="homepage-2cols-data">
+    <h2>Looking for public charter school data?</h2>
+    <div class="row">
+      {% for column in columns %}
+        <div class="col-sm-6">
+          {% include '@napcs_block/napcs-block-homepage-col.html.twig' with {'column':column} %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

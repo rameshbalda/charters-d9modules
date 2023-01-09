@@ -1,0 +1,5 @@
+name: NAPCS Block
+type: module
+description: Miscellaneous custom blocks for NAPCS
+core_version_requirement: ^8 || ^9
+package: NAPCS

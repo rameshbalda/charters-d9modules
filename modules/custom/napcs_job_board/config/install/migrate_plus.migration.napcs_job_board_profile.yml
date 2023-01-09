@@ -1,0 +1,35 @@
+id: napcs_job_board_profile
+label: 'NAPCS Job Board Profiles'
+description: 'Migration of user profile content from WordPress to Drupal 8 for the new NAPCS site.'
+source_type: 'SQL source'
+migration_group: napcs_job_board
+dependencies:
+  enforced:
+    module:
+      - napcs_job_board
+migration_dependencies:
+  required:
+    - napcs_job_board_user
+
+source:
+  plugin: job_board_profile
+
+process:
+  field_first_name: first_name
+  field_last_name: last_name
+  field_twitter_id: twitter
+  field_website: user_url
+  'body/value': description
+  uid:
+    plugin: migration_lookup
+    migration: napcs_job_board_user
+    source: id
+  status:
+    plugin: default_value
+    default_value: 1
+  type:
+    plugin: default_value
+    default_value: profile
+
+destination:
+  plugin: entity:node

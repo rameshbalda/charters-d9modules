@@ -1,0 +1,7 @@
+<div>
+  {% for link in links %}
+    <a href="{{ link.link }}" class="podcast-link">
+      <img src="{{ '/themes/custom/napcs2017/assets/img/podcast-icons/' ~ link.icon ~ '.png' }}" alt="{{ link.service }}">
+    </a>
+  {% endfor %}
+</div>

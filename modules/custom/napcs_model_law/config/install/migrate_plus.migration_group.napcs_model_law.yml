@@ -1,0 +1,25 @@
+id: napcs_model_law
+label: 'NAPCS Model Law'
+description: 'Migration (and later, manual import) of model law data'
+source_type: 'CSV'
+dependencies:
+  enforced:
+    module:
+      - napcs_model_law
+
+shared_configuration:
+  source:
+    plugin: csv
+
+  process:
+    type:
+      plugin: default_value
+    status:
+      plugin: default_value
+      default_value: 1
+    title: title
+    'field_ml_state/target_id': state
+    'field_ml_component/target_id': component
+
+  destination:
+    plugin: node_safe

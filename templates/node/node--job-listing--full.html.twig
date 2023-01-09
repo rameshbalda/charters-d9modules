@@ -1,0 +1,61 @@
+{%
+  set classes = [
+    node.bundle|clean_class,
+    node.isPromoted() ? 'is-promoted',
+    node.isSticky() ? 'is-sticky',
+    not node.isPublished() ? 'is-unpublished',
+    view_mode ? view_mode|clean_class,
+    'clearfix',
+  ]
+%}
+<article{{ attributes.addClass(classes) }}>
+
+  {{ title_prefix }}
+  {% if not page %}
+    <h2{{ title_attributes }}>
+      <a href="{{ url }}" rel="bookmark">{{ label }}</a>
+    </h2>
+  {% endif %}
+  {{ title_suffix }}
+
+  {% if display_submitted %}
+    <footer>
+      {{ author_picture }}
+      <div{{ author_attributes.addClass('author') }}>
+        {% trans %}Submitted by {{ author_name }} on {{ date }}{% endtrans %}
+        {{ metadata }}
+      </div>
+    </footer>
+  {% endif %}
+
+  <div{{ content_attributes.addClass('content') }}>
+    <div class="row">
+      <div class="col-md-4" id="job-posting-info">
+        <div class="title">
+          <h3{{ title_attributes }}>{{ label }}</h3>
+        </div>
+
+        <div class="info-wrapper">
+          {{ content.field_posted_date }}
+          {{ content.field_organization }}
+          {{ content.field_school_level }}
+
+          <div class="field job-location">
+            <div class="field--label">Location</div>
+            {{ getListingAddress(content) }}
+          </div>
+
+          {{ content.field_job_type }}
+        </div>
+        <div class="apply-button">
+          <a href="/node/add/application?app_id={{ node.id }}">Apply Now  <span class="arrow-left"> <i class="fa fa-arrow-right"></i></span></a>
+        </div>
+
+      </div>
+      <div class="col-md-8 job-post-content" id="job-posting-content">
+        {{ content.body }}
+      </div>
+    </div>
+  </div>
+
+</article>

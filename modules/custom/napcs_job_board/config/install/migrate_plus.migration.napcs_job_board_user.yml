@@ -1,0 +1,27 @@
+id: napcs_job_board_user
+label: 'NAPCS Job Board Users'
+description: 'Migration of user accounts that authored job board content from WordPress to Drupal 8 for the new NAPCS site.'
+source_type: 'SQL source'
+migration_group: napcs_job_board
+dependencies:
+  enforced:
+    module:
+      - napcs_job_board
+
+source:
+  plugin: job_board_user
+
+process:
+  name: user_login
+  mail: user_email
+  created:
+    plugin: callback
+    callable: strtotime
+    source: user_registered
+  roles: roles
+  status:
+    plugin: default_value
+    default_value: 1
+
+destination:
+  plugin: entity:user

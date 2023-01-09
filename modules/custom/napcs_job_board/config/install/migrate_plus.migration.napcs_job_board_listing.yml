@@ -1,0 +1,71 @@
+id: napcs_job_board_listing
+label: 'NAPCS Job Board Job Listings'
+description: 'Migration of job listing content from WordPress to Drupal 8 for the new NAPCS site.'
+source_type: 'SQL source'
+migration_group: napcs_job_board
+migration_dependencies:
+  required:
+    - napcs_job_board_organization
+    - napcs_job_board_type
+    - napcs_job_board_category
+
+source:
+  plugin: job_board_listing
+
+process:
+  field_job_type:
+    plugin: migration_lookup
+    migration: napcs_job_board_type
+    source: job_type
+  field_job_category:
+    plugin: migration_lookup
+    migration: napcs_job_board_category
+    source: job_category
+  'body/value': job_description
+  'body/format':
+    plugin: default_value
+    default_value: full_html
+  # job_country
+  # job_state
+  # job_zip_code
+  # job_location
+  field_legacy_location: location
+  title: job_title
+  # job_slug
+  created:
+    plugin: callback
+    callable: strtotime
+    source: job_created_at
+  changed:
+    plugin: callback
+    callable: strtotime
+    source: job_modified_at
+  field_posted_date:
+    -
+      plugin: explode
+      delimiter: ' '
+      source: job_created_at
+    -
+      plugin: extract
+      index:
+        - 0
+  status: is_approved
+  field_is_active: is_active
+  field_is_filled: is_filled
+  field_organization:
+    plugin: migration_lookup
+    migration: napcs_job_board_organization
+    source: employer_id
+  uid:
+    -
+      plugin: migration_lookup
+      migration: napcs_job_board_organization
+      source: employer_id
+    -
+      plugin: node_author
+  type:
+    plugin: default_value
+    default_value: job_listing
+
+destination:
+  plugin: entity:node

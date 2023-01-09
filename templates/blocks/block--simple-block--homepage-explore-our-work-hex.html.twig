@@ -1,0 +1,38 @@
+{% extends '@bootstrap/block/block.html.twig' %}
+{% block content %}
+<h2 class="bar-top">Explore Our Work</h2>
+<div class="row fourhexes">
+  <div class="col-xs-8 col-xs-offset-2 col-sm-5 col-sm-offset-1 col-md-3 col-md-offset-0">
+    {% include '@napcs2017/components/hexagon/hexagon.html.twig' with {
+      'color': 'orange',
+      'url' : '/our-work/publications',
+      'icon': 'note',
+      'text': 'Publications',
+    } %}
+  </div>
+  <div class="col-xs-8 col-xs-offset-2 col-sm-5 col-sm-offset-0 col-md-3 col-md-offset-0">
+    {% include '@napcs2017/components/hexagon/hexagon.html.twig' with {
+      'color': 'blue',
+      'url' : '/our-work/federal-policy',
+      'icon': 'building',
+      'text': 'Federal policy',
+    } %}
+  </div>
+  <div class="col-xs-8 col-xs-offset-2 col-sm-5 col-sm-offset-1 col-md-3 col-md-offset-0">
+    {% include '@napcs2017/components/hexagon/hexagon.html.twig' with {
+      'color': 'red',
+      'url' : '/our-work/legal-advocacy',
+      'icon': 'balance',
+      'text': 'Legal advocacy',
+    } %}
+  </div>
+  <div class="col-xs-8 col-xs-offset-2 col-sm-5 col-sm-offset-0 col-md-3 col-md-offset-0">
+    {% include '@napcs2017/components/hexagon/hexagon.html.twig' with {
+      'color': 'green',
+      'url' : 'http://ncsc.publiccharters.org',
+      'icon': 'calendar',
+      'text': 'National Charter Schools Conference',
+    } %}
+  </div>
+</div>
+{% endblock %}

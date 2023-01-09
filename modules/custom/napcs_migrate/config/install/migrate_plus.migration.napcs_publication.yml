@@ -1,0 +1,52 @@
+id: napcs_publication
+label: Publication
+migration_group: napcs_node
+migration_dependencies:
+  required:
+    - napcs_media
+
+source:
+  urls: private://publication.xml
+  item_selector: /rss/channel/item[wp:post_type="publications"]
+  fields:
+    pdf:
+      name: pdf
+      selector: wp:postmeta[wp:meta_key="wpcf-publication-pdf"]/wp:meta_value
+    image_id:
+      name: image_id
+      selector: wp:postmeta[wp:meta_key="_thumbnail_id"]/wp:meta_value
+    author_name:
+      name: author_name
+      selector: category[@domain="author"]
+  constants:
+    file_uri_prefix: public://migrated
+    image: image
+
+process:
+  type:
+    default_value: publication
+  file_path:
+    -
+      plugin: callback
+      callable: parse_url
+      source: pdf
+    -
+      plugin: extract
+      index:
+        - path
+  'field_document/target_id':
+    -
+      plugin: concat
+      source:
+        - constants/file_uri_prefix
+        - '@file_path'
+    -
+      plugin: document_by_uri
+
+  'field_image_media/target_id':
+    plugin: migration_lookup
+    migration: napcs_media
+    source: image_id
+  field_author:
+    plugin: entity_generate
+    source: author_name

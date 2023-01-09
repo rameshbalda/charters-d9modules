@@ -1,0 +1,7 @@
+name: NAPCS Staff/Board Bios
+type: module
+description: Customization for NAPCS Staff and Board bios
+core_version_requirement: ^8 || ^9
+package: NAPCS
+dependencies:
+  - drupal:pathauto

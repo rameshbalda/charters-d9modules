@@ -1,0 +1,7 @@
+<div class="metabar">
+  {% for item in items %}
+    {% if item|render|trim is not empty %}
+      <div class="metabar__item">{{ item }}</div>
+    {% endif %}
+  {% endfor %}
+</div>

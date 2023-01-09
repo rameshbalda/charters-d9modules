@@ -1,0 +1,10 @@
+services:
+  napcs_model_law.data:
+    class: Drupal\napcs_model_law\ModelLawData
+    arguments: ['@entity_type.manager', '@current_route_match', '@state']
+  plugin.manager.model_law_data_provider:
+    class: Drupal\napcs_model_law\ModelLawDataProviderManager
+    parent: default_plugin_manager
+  plugin.manager.model_law_download:
+    class: Drupal\napcs_model_law\ModelLawDownloadManager
+    parent: default_plugin_manager

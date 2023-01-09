@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Contains napcs_user.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_help().
+ */
+function napcs_user_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the napcs_user module.
+    case 'help.page.napcs_user':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('User customizations for NAPCS') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function napcs_user_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Notify new user via email by default if creating user as admin.
+  if (\Drupal::currentUser()->hasPermission('administer users')) {
+    $form['account']['notify']['#default_value'] = TRUE;
+  }
+}

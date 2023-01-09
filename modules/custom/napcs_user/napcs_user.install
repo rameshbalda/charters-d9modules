@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * Install functions for NAPCS User module.
+ */
+
+// @codingStandardsIgnoreStart
+/**
+ * Abandon personas.
+ *
+ * Removed 2021-11-22
+ *
+function napcs_user_update_8001(&$sandbox) {
+  // Load all users.
+  $users = user_load_multiple();
+  // Ignore anon.
+  unset($users[0]);
+  foreach ($users as $user) {
+    // Store roles so we can restore them after uninstall.
+    $users_roles[$user->id()] = $user->getRoles();
+    // Get rid of personas so we can uninstall.
+    $user->set('personas', NULL);
+    // This nukes all the roles.
+    $user->save();
+  }
+  // Uninstall Personas module.
+  \Drupal::service('module_installer')->uninstall(['personas']);
+  // Resave admins.
+  foreach ($users as $user) {
+    if (in_array('administrator', $users_roles[$user->id()])) {
+      $user->set('roles', $users_roles[$user->id()]);
+      $user->save();
+    }
+  }
+}
+*/
+// @codingStandardsIgnoreEnd

@@ -1,0 +1,7 @@
+name: NAPCS Twig Extensions
+type: module
+description: NAPCS Twig Extensions
+core_version_requirement: ^8 || ^9
+package: NAPCS
+dependencies:
+  - drupal:napcs_job_board

@@ -1,0 +1,25 @@
+<div class="page">
+  <a name="Top" id="Top"></a>
+  {% include directory ~ '/templates/layout/header.html.twig' %}
+    <div id="main" class="content-area" role="main">
+    <a id="main-content"></a>
+    {% include directory ~ '/templates/layout/lead-image.html.twig' %}
+    <div class="main-container">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12">
+            {{ page.highlighted }}
+            {% if action_links %}
+              <nav class="action-links">{{ action_links }}</nav>
+            {% endif %}
+            {{ page.content_top }}
+          </div>
+        </div>
+      </div>
+      {{ page.content }}
+      {{ page.content_lower }}
+    </div>
+    <a href="#Top" class="btn-btt" title="Back to Top" style="display: block;"></a>          
+    {% include directory ~ '/templates/layout/footer.html.twig' %}
+  </div>
+</div>

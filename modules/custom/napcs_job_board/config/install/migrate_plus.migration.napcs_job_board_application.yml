@@ -1,0 +1,36 @@
+id: napcs_job_board_application
+label: 'NAPCS Job Board applications'
+description: 'Migration of applications that authored job board content from WordPress to Drupal 8 for the new NAPCS site.'
+source_type: 'SQL source'
+migration_group: napcs_job_board
+migration_dependencies:
+  required:
+    - napcs_job_board_listing
+
+source:
+  plugin: job_board_application
+
+process:
+  field_job_listing:
+    plugin: migration_lookup
+    migration: napcs_job_board_listing
+    source: job_id
+  uid:
+    plugin: migration_lookup
+    migration: napcs_job_board_user
+    source: user_id
+  created:
+    plugin: callback
+    callable: strtotime
+    source: applied_at
+  title: title
+  'body/value': resume
+  'body/format':
+    plugin: default_value
+    default_value: full_html
+  type:
+    plugin: default_value
+    default_value: application
+
+destination:
+  plugin: entity:node

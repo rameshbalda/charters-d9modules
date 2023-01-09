@@ -1,0 +1,27 @@
+napcs_job_board.user_register_form:
+  path: '/job-board/register/{user_role}'
+  defaults:
+    _controller: '\Drupal\napcs_job_board\Controller\UserController::register'
+    _title_callback: '\Drupal\napcs_job_board\Controller\UserController::registerTitle'
+  requirements:
+    _napcs_job_board_access_user_register: 'TRUE'
+  options:
+    parameters:
+      user_role:
+        type: entity:user_role
+
+napcs_job_board.user_login:
+  path: '/job-board/login'
+  defaults:
+    _controller: '\Drupal\napcs_job_board\Controller\UserController::login'
+    _title: 'Log In to the Job Board'
+  requirements:
+    _access: 'TRUE'
+
+napcs_job_board.user_password:
+  path: '/job-board/password'
+  defaults:
+    _controller: '\Drupal\napcs_job_board\Controller\UserController::password'
+    _title: 'Reset your password'
+  requirements:
+    _access: 'TRUE'

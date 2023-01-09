@@ -1,0 +1,7 @@
+id: 'napcs_job_board'
+label: 'NAPCS Job Board'
+description: 'Migration of job board content from WordPress to Drupal 8 for the new NAPCS site.'
+dependencies:
+  enforced:
+    module:
+      - napcs_job_board

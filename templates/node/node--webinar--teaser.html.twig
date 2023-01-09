@@ -1,0 +1,15 @@
+<article{{ attributes.addClass('row') }}>
+  <div class="col-md-3">
+    {{ content.field_webinar_image }}
+  </div>
+  <div class="col-md-9">
+    {{ title_prefix }}
+    <h4>
+      {% if url %}<a target="_blank" href="{{ url }}">{% endif %}
+        {{ label }}
+      {% if url %}</a>{% endif %}
+    </h4>
+    {{ title_suffix }}
+    {{ content| without('field_webinar_image') }}
+  </div>
+</article>

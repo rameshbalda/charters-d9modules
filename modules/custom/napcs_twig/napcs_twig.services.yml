@@ -1,0 +1,5 @@
+services:
+  napcs_twig.twig.napcs_twig_extension:
+    class: Drupal\napcs_twig\Twig\NAPCSTwigExtension
+    tags:
+      - { name: twig.extension }

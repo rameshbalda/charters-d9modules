@@ -1,0 +1,28 @@
+<div class="homepage-col">
+  <div class="row homepage-col__header vertical-align-center">
+    <div class="col-xs-3 col-sm-4">
+      {% include "@napcs2017/components/hexagon/hexagon.html.twig" with {
+        'icon' : column.icon,
+        'url' : column.url,
+      } %}
+    </div>
+    <div class="col-xs-9 col-sm-8">
+      <h4>{{ column.title_link ? column.title_link : column.title }}</h4>
+    </div>
+  </div>
+  <p class="homepage-col__text">{{ column.content }}</p>
+  {% if column.footer_right %}
+    <div class="row">
+      <div class="col-md-6">
+  {% endif %}
+  <div class="homepage-col__link">
+    {{ column.link_text_link }}
+  </div>
+  {% if column.footer_right %}
+      </div>
+      <div class="col-md-6">
+        {{ column.footer_right }}
+      </div>
+    </div>
+  {% endif %}
+</div>

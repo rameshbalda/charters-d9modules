@@ -1,0 +1,7 @@
+name: NAPCS User
+type: module
+description: User customizations for NAPCS
+core_version_requirement: ^8 || ^9
+package: NAPCS
+dependencies:
+  - drupal:user

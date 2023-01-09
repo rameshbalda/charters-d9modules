@@ -1,0 +1,15 @@
+services:
+  napcs_migrate.event_subscriber:
+    class: \Drupal\napcs_migrate\EventSubscriber\EventSubscriber
+    tags:
+      - { name: 'event_subscriber' }
+    arguments: ['@redirect.repository']
+  plugin.manager.dom_element_process:
+    class: Drupal\napcs_migrate\Plugin\DOMElementProcessManager
+    parent: default_plugin_manager
+  napcs_migrate.dom_helper:
+    class: Drupal\napcs_migrate\DOMHelperService
+    arguments: ['@file_system', '@plugin.manager.dom_element_process']
+  napcs_migrate.file_migrate_helper:
+    class: Drupal\napcs_migrate\FileMigrateHelperService
+    arguments: ['@entity_type.manager', '@file_system']

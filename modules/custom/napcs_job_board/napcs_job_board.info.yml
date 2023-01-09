@@ -1,0 +1,17 @@
+name: NAPCS Job Board
+type: module
+description: NAPCS Job Board functionality
+core_version_requirement: ^8 || ^9
+package: NAPCS
+dependencies:
+  - drupal:migrate_plus
+config_devel:
+  - migrate_plus.migration.napcs_job_board_application
+  - migrate_plus.migration.napcs_job_board_category
+  - migrate_plus.migration.napcs_job_board_listing
+  - migrate_plus.migration.napcs_job_board_organization
+  - migrate_plus.migration.napcs_job_board_profile
+  - migrate_plus.migration.napcs_job_board_type
+  - migrate_plus.migration.napcs_job_board_user
+  - migrate_plus.migration_group.napcs_job_board
+  - migrate_plus.migration_group.napcs_job_board_taxonomy

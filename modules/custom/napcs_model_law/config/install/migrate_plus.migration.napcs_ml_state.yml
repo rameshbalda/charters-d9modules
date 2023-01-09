@@ -1,0 +1,68 @@
+id: napcs_ml_state
+label: 'NAPCS Model Law State'
+migration_group: napcs_model_law
+dependencies:
+  enforced:
+    module:
+      - napcs_model_law
+
+source:
+  path: 'private://ml_state.csv'
+  ids: [nid]
+  fields:
+    -
+      name: nid
+      label: Node ID
+    -
+      name: title
+      label: Name
+    -
+      name: year
+      label: Year Law Passed
+    -
+      name: schools
+      label: '# of Schools'
+    -
+      name: students
+      label: '# of Students'
+    -
+      name: text
+      label: Text
+
+process:
+  nid:
+    plugin: skip_on_empty
+    method: row
+    source: nid
+  title:
+    plugin: skip_on_empty
+    method: process
+    source: title
+  field_ml_year_passed:
+    plugin: skip_on_empty
+    method: process
+    source: year
+  field_ml_num_schools:
+    plugin: skip_on_empty
+    method: process
+    source: schools
+  field_ml_num_students:
+    plugin: skip_on_empty
+    method: process
+    source: studens
+  'body/value':
+    -
+      plugin: skip_on_empty
+      method: process
+      source: text
+    -
+      plugin: callback
+      callable:
+        - '\ForceUTF8\Encoding'
+        - 'toUTF8'
+    -
+      plugin: callback
+      callable: _filter_autop
+  'body/format':
+    plugin: default_value
+    default_value: full_html

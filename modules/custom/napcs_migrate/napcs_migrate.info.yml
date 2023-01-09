@@ -1,0 +1,16 @@
+name: NAPCS Migrate
+type: module
+description: Wordpress -> Drupal migrations for NAPCS
+core_version_requirement: ^8 || ^9
+package: NAPCS
+dependencies:
+  - drupal:migrate_plus
+config_devel:
+  - migrate_plus.migration.napcs_attachment
+  - migrate_plus.migration.napcs_blog
+  - migrate_plus.migration.napcs_media
+  - migrate_plus.migration.napcs_news_item
+  - migrate_plus.migration.napcs_page
+  - migrate_plus.migration.napcs_publication
+  - migrate_plus.migration_group.napcs_media
+  - migrate_plus.migration_group.napcs_node

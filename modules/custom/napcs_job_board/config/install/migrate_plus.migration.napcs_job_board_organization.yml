@@ -1,0 +1,38 @@
+id: napcs_job_board_organization
+label: 'NAPCS Job Board Organizations'
+description: 'Migration of organization content from WordPress to Drupal 8 for the new NAPCS site.'
+source_type: 'SQL source'
+migration_group: napcs_job_board
+dependencies:
+  enforced:
+    module:
+      - napcs_job_board
+migration_dependencies:
+  required:
+    - napcs_job_board_user
+
+source:
+  plugin: job_board_organization
+
+process:
+  uid:
+    plugin: migration_lookup
+    migration: napcs_job_board_user
+    source: user_id
+  title: company_name
+  field_website: company_website
+  'body/value': company_info
+# company_logo_ext: 
+  'field_address/country_code':
+    plugin: default_value
+    default_value: 'US'
+  'field_address/administrative_area': state
+  'field_address/postal_code':  company_zip_code
+  'field_address/locality': company_location
+  status: is_public
+  type:
+    plugin: default_value
+    default_value: organization
+
+destination:
+  plugin: entity:node

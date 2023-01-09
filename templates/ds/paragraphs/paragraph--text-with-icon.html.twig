@@ -1,0 +1,17 @@
+{% extends "@napcs2017/ds/paragraphs/paragraph.html.twig" %}
+{% block content %}
+<div class="container">
+  {{ content.field_section_title }}
+  <div class="row vertical-align-center">
+    <div class="col-xs-8 col-xs-push-2 col-sm-3{{ paragraph.field_text_location.value == 1 ? ' col-sm-push-9' : ' col-sm-push-0' }}">
+      {% include "@napcs2017/components/hexagon/hexagon.html.twig" with {
+        attributes: {},
+        icon: content.field_icon[0]['#title'],
+      } %}
+    </div>
+    <div class="col-xs-12 col-sm-9 {{ paragraph.field_text_location.value == 1 ? 'col-sm-pull-3' : '' }}">
+      {{ content.field_text_beside_icon }}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+id: napcs_attachment
+label: Attachments (files and images)
+migration_group: napcs_media
+migration_tags:
+  - attachment
+  - file
+  - image
+
+source:
+  constants:
+    file_dest_uri: public://migrated
+
+process:
+  file_source: url
+  file_path:
+    -
+      plugin: callback
+      callable: parse_url
+      source: url
+    -
+      plugin: extract
+      index:
+        - path
+  file_dest:
+    plugin: concat
+    source:
+      - constants/file_dest_uri
+      - '@file_path'
+  filename:
+    plugin: callback
+    callable: basename
+    source: url
+  uri:
+    plugin: file_copy
+    source:
+      - '@file_source'
+      - '@file_dest'
+  status:
+    plugin: default_value
+    default_value: 1
+
+destination:
+  plugin: entity:file
+
+dependencies:
+  enforced:
+    module:
+      - napcs_migrate

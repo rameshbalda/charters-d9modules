@@ -1,0 +1,26 @@
+id: 'napcs_media'
+label: 'NAPCS Media'
+description: 'Migration of files from WordPress to Drupal 8 for the new NAPCS site.'
+source_type: 'WordPress XML exports'
+dependencies:
+  enforced:
+    module:
+      - 'napcs_migrate'
+
+shared_configuration:
+  source:
+    plugin: url
+    data_fetcher_plugin: http
+    data_parser_plugin: xml
+    urls: private://attachment.xml
+    item_selector: /rss/channel/item[wp:post_type="attachment"]
+    fields:
+      id:
+        name: id
+        selector: wp:post_id
+      url:
+        name: url
+        selector: wp:attachment_url
+    ids:
+      id:
+        type: integer

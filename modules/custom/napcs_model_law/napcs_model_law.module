@@ -1,0 +1,193 @@
+<?php
+
+/**
+ * @file
+ * Contains napcs_model_law.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function napcs_model_law_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the napcs_model_law module.
+    case 'help.page.napcs_model_law':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('NAPCS Model Law Database functionality') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function napcs_model_law_theme($existing, $type, $theme, $path) {
+  return [
+    'model_law_accordion' => [
+      'variables' => [
+        'attributes' => [],
+        'panels' => [],
+      ],
+    ],
+    'model_law_panel_heading' => [
+      'variables' => [
+        'position' => '',
+        'title' => '',
+        'score' => '',
+      ],
+    ],
+    'model_law_component_score' => [
+      'variables' => [
+        'score' => '',
+        'points' => '',
+        'wt' => '',
+        'total' => '',
+      ],
+    ],
+    'model_law_state_score' => [
+      'variables' => [
+        'score' => '',
+        'total' => \Drupal::service('napcs_model_law.data')->getMaxScore(),
+      ],
+    ],
+    'model_law_panel_body' => [
+      'variables' => [
+        'question' => '',
+        'text' => '',
+        'subcomponent_groups' => [],
+      ],
+    ],
+    'model_law_subcomponent_group' => [
+      'variables' => [
+        'title' => '',
+        'subcomponents' => [],
+      ],
+    ],
+    'model_law_subcomponent' => [
+      'variables' => [
+        'status' => '',
+        'number' => '',
+        'subcomponent' => '',
+      ],
+    ],
+    'model_law_status' => [
+      'variables' => [
+        'status' => 'N/A',
+        'attributes' => [],
+      ],
+    ],
+  ];
+}
+
+/**
+ * Default template processing for model law panel body.
+ */
+function template_preprocess_model_law_panel_body(&$variables) {
+  $variables['key'] = [];
+  for ($i = 0; $i < 3; $i++) {
+    array_unshift($variables['key'], [
+      '#type' => 'model_law_status',
+      '#status' => (string) $i,
+    ]);
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function napcs_model_law_preprocess_node(&$vars) {
+  switch ($vars['node']->getType()) {
+    case 'ml_state':
+      // Set up vars for use in model-law-panel-heading.html.twig.
+      $state = $vars['node'];
+      if ($score = $state->get('field_ml_state_score')->first()) {
+        $score = $score->view();
+      }
+      else {
+        $score = ['#markup' => '-'];
+      }
+      $vars['score'] = [
+        '#theme' => 'model_law_state_score',
+        '#score' => $score,
+        '#total' => \Drupal::service('napcs_model_law.data')->getMaxScore(),
+      ];
+      if ($vars['teaser']) {
+        $vars['title'] = $state->toLink($state->getTitle());
+      }
+      break;
+
+    case 'ml_component':
+      if ($vars['teaser']) {
+        // Set up vars for use in model-law-panel-heading.html.twig.
+        $component = $vars['node'];
+        $vars['position'] = $component->get('field_ml_position')->first()->view();
+        $vars['title'] = $component->toLink($component->getTitle())->toString();
+      }
+      break;
+
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function napcs_model_law_node_insert($node) {
+  napcs_model_law_node_update($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function napcs_model_law_node_update($node) {
+  switch ($node->getType()) {
+    case 'ml_state_component_score':
+      // If component score has changed, recalculate state score.
+      if (_napcs_model_law_field_updated($node, 'field_ml_state_component_score')) {
+        $state_field = $node->get('field_ml_state')->referencedEntities();
+        $state = array_shift($state_field);
+        \Drupal::service('napcs_model_law.data')->updateStateScore($state);
+      }
+      break;
+
+    case 'ml_component':
+      // If component weight has changed, recalculate max score and state scores
+      // (which depend on value of max score).
+      if (_napcs_model_law_field_updated($node, 'field_ml_weight')) {
+        $model_law_data = \Drupal::service('napcs_model_law.data');
+        $model_law_data->getMaxScore(TRUE);
+        foreach ($model_law_data->getStates() as $state) {
+          $model_law_data->updateStateScore($state);
+        }
+      }
+      break;
+
+  }
+}
+
+/**
+ * Return a boolean representing if a field value has changed.
+ */
+function _napcs_model_law_field_updated($node, $field) {
+  if ($node->hasField($field)) {
+    // If this is a new node (no original), the field value is new too.
+    if (!isset($node->original)) {
+      $updated = TRUE;
+    }
+    // If the node is being updated, compare old and new values.
+    else {
+      $new_value = $node->$field->value;
+      $old_value = $node->original->$field->value;
+      $updated = $new_value != $old_value;
+    }
+  }
+  else {
+    // If the node doesn't have this field, we consider it not updated.
+    $updated = FALSE;
+  }
+  return $updated;
+}

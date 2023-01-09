@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file
+ * Contains napcs_news.module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function napcs_news_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the napcs_news module.
+    case 'help.page.napcs_news':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('NAPCS News customizations') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view_alter().
+ */
+function napcs_news_node_view_alter(&$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
+  // Hide comments on news items that are not blog posts.
+  if ($display->id() !== 'node.news_item.default') {
+    return FALSE;
+  }
+  $news_item_types = $entity->get('field_news_item_types')->referencedEntities();
+  if (!$news_item_types) {
+    return FALSE;
+  }
+  $news_item_type = reset($news_item_types);
+  if ($news_item_type->id() != 425) {
+    unset($build['field_comments']);
+  }
+}

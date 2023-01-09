@@ -1,0 +1,22 @@
+{% spaceless %}
+<article {{ attributes.addClass('card') }}>
+  {% if meta_items|render|trim is not empty %}
+    {% include '@napcs2017/components/metabar/metabar.html.twig' with {
+      items: meta_items,
+    } %}
+  {% endif %}
+  {% if image %} {{ image }} {% endif %}
+  <h4 class="card__title">
+    {% if url %}
+      <a href="{{ url }}" rel="bookmark">
+    {% endif %}
+    {{ title }}
+    {% if url %}
+      </a>
+    {% endif %}
+  </h4>
+  {% for item in content %}
+    {{ item }}
+  {% endfor %}
+</article>
+{% endspaceless %}

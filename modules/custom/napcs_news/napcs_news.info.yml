@@ -1,0 +1,5 @@
+name: 'NAPCS News'
+type: module
+description: 'NAPCS News customizations'
+core_version_requirement: ^8 || ^9
+package: 'NAPCS'

@@ -1,0 +1,12 @@
+view job applications:
+  title: 'View job applications'
+  description: 'View applications submitted to the job board'
+  restrict access: true
+view job applications for own listings:
+  title: 'View job applications for own listings'
+  description: 'View applications submitted to the job board for a listing owned by the current user'
+  restrict access: false
+view own job applications:
+  title: 'View own job applications'
+  description: 'View applications submitted to the job board by the current user'
+  restrict access: false

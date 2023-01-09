@@ -1,0 +1,40 @@
+{% set has_sidebar = page.sidebar_first|render|trim %}
+{% if is_basic_page %}
+  {% set basic_page_class = has_sidebar ? 'basic-page-content-sidebar' : 'basic-page-content' %}
+{% endif %}
+<div class="page">
+  <a name="Top" id="Top"></a>
+  {% include directory ~ '/templates/layout/header.html.twig' %}
+  <div id="main" class="content-area {{ basic_page_class }}" role="main">
+    <a id="main-content"></a>
+    {% include directory ~ '/templates/layout/lead-image.html.twig' %}
+    {{ page.content_top_full_width }}
+    <div class="main-container container">
+      <div class="row">
+        <div class="col-sm-12">
+          {{ page.highlighted }}
+          {% if action_links %}
+            <nav class="action-links">{{ action_links }}</nav>
+          {% endif %}
+          {{ page.content_top }}
+        </div>
+      </div>
+      <div class="row">
+        {%  if has_sidebar %}
+          {% if is_employer %}
+            <div class="col-sm-9 col-sm-push-3 main-content-area content-w-sidebar">{{ page.sidebar_first }}</div>
+            <div class="col-sm-3 col-sm-pull-9 sidebar">{{ page.content }}</div>
+          {% else %}
+            <div class="col-sm-9 col-sm-push-3 main-content-area content-w-sidebar">{{ page.content }}</div>
+            <div class="col-sm-3 col-sm-pull-9 sidebar">{{ page.sidebar_first }}</div>
+          {% endif %}
+        {% else %}
+          <div class="col-sm-12 main-content-area content-no-sidebar">{{ page.content }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {{ page.content_lower }}
+    <a href="#Top" class="btn-btt" title="Back to Top" style="display: block;"></a>
+    {% include directory ~ '/templates/layout/footer.html.twig' %}
+  </div>
+</div>

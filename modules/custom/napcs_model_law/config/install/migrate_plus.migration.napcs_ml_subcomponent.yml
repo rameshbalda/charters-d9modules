@@ -1,0 +1,52 @@
+id: napcs_ml_subcomponent
+label: 'NAPCS Model Law State Subcomponent Scores'
+migration_group: napcs_model_law
+dependencies:
+  enforced:
+    module:
+      - napcs_model_law
+
+source:
+  path: 'private://ml_state_subcomponent.csv'
+  ids: [state, component, group, subcomponent]
+  fields:
+    -
+      name: state
+      label: State ID
+    -
+      name: component
+      label: Component ID
+    -
+      name: group
+      label: Group delta
+    -
+      name: subcomponent
+      label: Subcomponent delta
+    -
+      name: state_name
+      label: State Name
+    -
+      name: component_name
+      label: Component Name
+    -
+      name: group_title
+      label: Group title
+    -
+      name: subcomponent_title
+      label: Subcomponent title
+    -
+      name: subcomponent_number
+      label: Subcomponent number
+    -
+      name: status
+      label: status
+
+process:
+  type:
+    default_value: ml_state_subcomponent_status
+  field_ml_subcomponent_group_num: group
+  field_ml_subcomponent_num: subcomponent
+  field_ml_state_subcomp_status: status
+
+destination:
+  plugin: entity:node

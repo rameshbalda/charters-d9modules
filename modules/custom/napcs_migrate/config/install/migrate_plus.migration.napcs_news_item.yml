@@ -1,0 +1,14 @@
+id: napcs_news_item
+label: News Item
+migration_group: napcs_node
+migration_tags:
+  - node
+  - news_item
+
+source:
+  urls: private://news_item.xml
+  item_selector: /rss/channel/item[wp:post_type="press"]
+
+process:
+  type:
+    default_value: news_item

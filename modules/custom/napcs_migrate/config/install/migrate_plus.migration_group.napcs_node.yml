@@ -1,0 +1,96 @@
+id: napcs_node
+label: 'NAPCS Content'
+description: 'Migration of post content from WordPress to Drupal 8 for the new NAPCS site.'
+source_type: 'WordPress XML exports'
+dependencies:
+  enforced:
+    module:
+      - napcs_migrate
+shared_configuration:
+  source:
+    plugin: url
+    data_fetcher_plugin: http
+    data_parser_plugin: clean_xml
+    fields:
+      id:
+        name: id
+        selector: wp:post_id
+      title:
+        name: title
+        selector: title
+      created:
+        name: created
+        selector: wp:post_date
+      status:
+        name: status
+        selector: wp:status
+      body:
+        name: body
+        selector: 'content:encoded'
+      summary:
+        name: summary
+        selector: 'excerpt:encoded'
+      link:
+        name: link
+        selector: link
+    ids:
+      id:
+        type: integer
+
+  process:
+    type:
+      plugin: default_value
+    title:
+      -
+        plugin: callback
+        callable: trim
+        source: title
+      -
+        plugin: skip_on_empty
+        method: row
+        message: 'Skipping empty title'
+    created:
+      plugin: callback
+      callable: strtotime
+      source: created
+    status:
+      plugin: static_map
+      source: status
+      map:
+        publish: 1
+      default_value: 0
+    'body/value':
+      plugin: fix_urls
+      source: body
+    'body/summary':
+      plugin: fix_urls
+      source: summary
+    'body/format':
+      plugin: default_value
+      default_value: full_html
+    'path/alias':
+      -
+        plugin: callback
+        callable: parse_url
+        source: link
+      -
+        plugin: extract
+        index:
+          - path
+      -
+        plugin: strip_trailing_slash
+    'path/pathauto':
+      plugin: default_value
+      default_value: 0
+    field_pub_date:
+      -
+        plugin: explode
+        delimiter: ' '
+        source: created
+      -
+        plugin: extract
+        index:
+          - 0
+
+  destination:
+    plugin: entity:node

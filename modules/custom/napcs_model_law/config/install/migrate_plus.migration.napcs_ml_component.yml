@@ -1,0 +1,63 @@
+id: napcs_ml_component
+label: 'NAPCS Model Law State Component Scores'
+migration_group: napcs_model_law
+dependencies:
+  enforced:
+    module:
+      - napcs_model_law
+
+source:
+  path: 'private://ml_state_component.csv'
+  ids: [state, component]
+  fields:
+    -
+      name: nid
+      label: Node ID
+    -
+      name: state
+      label: State ID
+    -
+      name: component
+      label: Component ID
+    -
+      name: state_name
+      label: State Name
+    -
+      name: component_name
+      label: Component Name
+    -
+      name: score
+      label: Score
+    -
+      name: text
+      label: Text
+
+process:
+  type:
+    default_value: ml_state_component_score
+  field_ml_state_component_score:
+    -
+      plugin: skip_on_empty
+      method: process
+      source: score
+    -
+      plugin: static_map
+      bypass: true
+      map:
+        'N/A': null
+  'body/value':
+    -
+      plugin: skip_on_empty
+      method: process
+      source: text
+    -
+      plugin: callback
+      callable:
+        - '\ForceUTF8\Encoding'
+        - 'toUTF8'
+    -
+      plugin: callback
+      callable: _filter_autop
+  'body/format':
+    plugin: default_value
+    default_value: full_html
